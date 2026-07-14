@@ -1,4 +1,4 @@
-"""Use the MCP computer-use skill to clean up, commit, and verify the project."""
+"""Use the MCP computer-use skill to commit the latest improvements."""
 
 import asyncio
 import json
@@ -30,15 +30,9 @@ async def main():
         await session.initialize()
 
         cwd = "/Users/curnutte/CascadeProjects/mcp-computer-use"
-        # Delete leftover backup file
-        result = await call_tool(session, "delete_file", {"path": f"{cwd}/server.py.bak"})
-        if result.get("requires_confirmation"):
-            await call_tool(session, "confirm_sensitive_action", {"pending_id": result["pending_id"]})
-
-        # Commit current changes
         await call_tool(session, "run_shell_command", {"command": "git add -A", "cwd": cwd})
         await call_tool(session, "run_shell_command", {
-            "command": "git commit -m 'Add file tools, click_text, confirm_sensitive_action, expanded shell allowlist'",
+            "command": "git commit -m 'Improve list_windows with Quartz, add screenshot_region'",
             "cwd": cwd,
         })
 

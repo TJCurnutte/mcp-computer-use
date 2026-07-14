@@ -6,6 +6,7 @@ Enterprise-grade macOS MCP server that gives your AI agent eyes, hands, and a te
 
 - **Screenshot / display**
   - `screenshot` — capture a display and return a base64 PNG.
+  - `screenshot_region` — capture a region of the screen.
   - `get_display_info` — list connected displays.
   - `get_cursor_position` — get the mouse pointer location.
   - `ocr_screenshot` — run OCR on the screen and return all text.

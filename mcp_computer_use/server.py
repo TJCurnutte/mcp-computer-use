@@ -34,6 +34,12 @@ def screenshot(display: int = 0, scale: bool = True) -> str:
 
 
 @mcp.tool()
+def screenshot_region(left: int, top: int, width: int, height: int, scale: bool = True) -> str:
+    """Capture a region of the screen and return a base64 PNG."""
+    return json.dumps(act.screenshot_region(left, top, width, height, scale))
+
+
+@mcp.tool()
 def get_display_info() -> str:
     """Get information about all connected displays."""
     return json.dumps(act.get_display_info())

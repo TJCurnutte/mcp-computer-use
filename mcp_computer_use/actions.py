@@ -69,6 +69,24 @@ def take_screenshot(display: int = 0, scale: bool = True) -> dict:
     }
 
 
+def screenshot_region(left: int, top: int, width: int, height: int, scale: bool = True) -> dict:
+    """Capture a region of the screen and return a base64 PNG."""
+    img, _ = capture(region=(left, top, width, height))
+    original_width, original_height = img.width, img.height
+    if scale:
+        img = resize_for_model(img, CONFIG.max_screenshot_dim)
+    b64 = image_to_base64(img, CONFIG.screenshot_format, CONFIG.jpeg_quality)
+    return {
+        "width": img.width,
+        "height": img.height,
+        "original_width": original_width,
+        "original_height": original_height,
+        "region": (left, top, width, height),
+        "scale_factor": _get_scale_factor(),
+        "image": f"data:image/png;base64,{b64}",
+    }
+
+
 def get_cursor_position() -> dict:
     x, y = pyautogui.position()
     return {"x": x, "y": y}
@@ -230,7 +248,40 @@ def open_app(name: str) -> dict:
 
 
 def list_windows() -> dict:
-    script = '''
+    """List windows using Quartz (Screen Recording permission)."""
+    try:
+        import Quartz
+        window_list = Quartz.CGWindowListCopyWindowInfo(
+            Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
+            Quartz.kCGNullWindowID,
+        )
+        windows = []
+        for win in window_list:
+            bounds = win.get(Quartz.kCGWindowBounds, {})
+            if bounds.get("X") is None:
+                continue
+            windows.append(
+                {
+                    "app": win.get(Quartz.kCGWindowOwnerName, ""),
+                    "title": win.get(Quartz.kCGWindowName, ""),
+                    "window_id": win.get(Quartz.kCGWindowNumber),
+                    "pid": win.get(Quartz.kCGWindowOwnerPID),
+                    "x": bounds.get("X"),
+                    "y": bounds.get("Y"),
+                    "width": bounds.get("Width"),
+                    "height": bounds.get("Height"),
+                    "layer": win.get(Quartz.kCGWindowLayer),
+                    "alpha": win.get(Quartz.kCGWindowAlpha),
+                }
+            )
+        return {"windows": windows, "count": len(windows)}
+    except Exception as e:
+        logger.exception("Quartz list_windows failed, falling back to AppleScript")
+        return _run_applescript(list_windows_applescript())
+
+
+def list_windows_applescript() -> str:
+    return '''
     tell application "System Events"
         set windowList to {}
         repeat with p in (get processes whose background only is false)
@@ -247,7 +298,6 @@ def list_windows() -> dict:
     end tell
     return windowList
     '''
-    return _run_applescript(script)
 
 
 def focus_window(app_name: str, window_name: Optional[str] = None) -> dict:
