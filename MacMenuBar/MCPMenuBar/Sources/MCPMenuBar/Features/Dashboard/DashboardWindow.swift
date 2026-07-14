@@ -10,9 +10,10 @@ final class DashboardWindow: NSWindowController {
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.minSize = NSSize(width: 480, height: 320)
         window.isReleasedWhenClosed = false
-        window.center()
 
         super.init(window: window)
+        window.setContentSize(NSSize(width: 800, height: 600))
+        window.center()
     }
 
     required init?(coder: NSCoder) {
