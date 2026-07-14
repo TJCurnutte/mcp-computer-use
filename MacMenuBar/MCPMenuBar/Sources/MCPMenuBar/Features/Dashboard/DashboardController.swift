@@ -132,8 +132,8 @@ extension DashboardController: DashboardViewControllerDelegate {
         let access = permissionChecker.checkAccessibility()
         let screen = permissionChecker.checkScreenRecording()
 
-        let accessLabel = access ? "✅ Accessibility OK" : "⚠️️ Accessibility needed"
-        let screenLabel = screen ? "✅ Screen Recording OK" : "⚠️️ Screen Recording needed"
+        let accessLabel = access ? "✅ Accessibility OK" : "⚠️ Accessibility needed"
+        let screenLabel = screen ? "✅ Screen Recording OK" : "⚠️ Screen Recording needed"
         updatePermissionStatus("\(accessLabel), \(screenLabel)")
     }
 
