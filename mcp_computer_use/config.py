@@ -32,6 +32,7 @@ class Config:
         "tar", "zip", "unzip", "gzip", "gunzip", "rsync", "scp", "sftp", "curl", "wget",
         "ssh", "ssh-keygen", "sqlite3", "sqlite", "say", "screencapture", "caffeinate",
         "qlmanage", "pbcopy", "pbpaste", "mcp",
+        "ping", "traceroute", "dig", "nslookup", "host",
     ])
     blocked_shell_commands: List[str] = field(default_factory=lambda: ["rm -rf", "sudo", "su -", "mkfs", "dd", ">/dev/null", "shutdown", "reboot", "poweroff", "halt", "init 0"])
     require_confirmation_for: List[str] = field(default_factory=lambda: ["kill", "rm "])

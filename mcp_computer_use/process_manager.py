@@ -2,6 +2,7 @@
 
 import os
 import queue
+import signal
 import subprocess
 import threading
 import time
@@ -111,7 +112,7 @@ class ProcessManager:
         if proc is None:
             return {"error": "process not found", "process_id": process_id}
         try:
-            sig = getattr(os, signal_name, None)
+            sig = getattr(signal, signal_name, None)
             if sig is None:
                 return {"error": f"unknown signal {signal_name}", "process_id": process_id}
             proc.send_signal(sig)

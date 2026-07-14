@@ -32,7 +32,7 @@ async def main():
         cwd = "/Users/curnutte/CascadeProjects/mcp-computer-use"
         await call_tool(session, "run_shell_command", {"command": "git add -A", "cwd": cwd})
         await call_tool(session, "run_shell_command", {
-            "command": "git commit -m 'Add process manager for long-running commands and allow shell control structures'",
+            "command": "git commit -m 'Add network tools and fix process_kill signal lookup'",
             "cwd": cwd,
         })
 
