@@ -4,7 +4,7 @@ import AppKit
 
 final class DashboardController {
     let serverManager: ServerManager
-    let permissionChecker: PermissionChecker
+    let permissionsManager: PermissionsManager
     weak var stateForwardDelegate: ServerManagerDelegate?
 
     private var currentState: ServerState = .idle
@@ -41,9 +41,9 @@ final class DashboardController {
         }
     }
 
-    init(serverManager: ServerManager, permissionChecker: PermissionChecker) {
+    init(serverManager: ServerManager, permissionsManager: PermissionsManager) {
         self.serverManager = serverManager
-        self.permissionChecker = permissionChecker
+        self.permissionsManager = permissionsManager
         serverManager.delegate = self
         refreshServerState()
     }
@@ -247,11 +247,11 @@ extension DashboardController: DashboardViewControllerDelegate {
     func dashboardViewControllerDidSelectCheckPermissions() {
         updatePermissionStatus("Checking permissions...")
 
-        let access = permissionChecker.checkAccessibility()
-        let screen = permissionChecker.checkScreenRecording()
+        let access = permissionsManager.checkAccessibility()
+        let screen = permissionsManager.checkScreenRecording()
 
-        let accessLabel = access ? "✅ Accessibility OK" : "⚠️ Accessibility needed"
-        let screenLabel = screen ? "✅ Screen Recording OK" : "⚠️ Screen Recording needed"
+        let accessLabel = access ? "✅ Accessibility OK" : "⚠️ Accessibility needed (restart after granting)"
+        let screenLabel = screen ? "✅ Screen Recording OK" : "⚠️ Screen Recording needed (restart after granting)"
         updatePermissionStatus("\(accessLabel), \(screenLabel)")
     }
 

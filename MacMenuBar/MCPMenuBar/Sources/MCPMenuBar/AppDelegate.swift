@@ -13,7 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var menuManager: MenuManager!
     private var serverManager: ServerManager!
-    private var permissionChecker: PermissionChecker!
+    private var permissionsManager: PermissionsManager!
     private var dashboardController: DashboardController!
     private var onboardingController: OnboardingController!
     private var hotkeyManager: HotkeyManager!
@@ -21,17 +21,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.shared.log("MCPMenuBar launched")
 
-        permissionChecker = PermissionChecker()
+        permissionsManager = PermissionsManager()
 
         serverManager = ServerManager()
 
         dashboardController = DashboardController(
             serverManager: serverManager,
-            permissionChecker: permissionChecker
+            permissionsManager: permissionsManager
         )
         dashboardController.stateForwardDelegate = self
 
-        onboardingController = OnboardingController()
+        onboardingController = OnboardingController(permissionsManager: permissionsManager)
 
         hotkeyManager = HotkeyManager.shared
         hotkeyManager.dashboardController = dashboardController
@@ -70,7 +70,7 @@ extension AppDelegate: MenuManagerDelegate {
     }
 
     func menuManagerDidSelectCheckPermissions() {
-        permissionChecker.checkAndRequest()
+        permissionsManager.checkAndRequest()
     }
 
     func menuManagerDidSelectOpenLogs() {

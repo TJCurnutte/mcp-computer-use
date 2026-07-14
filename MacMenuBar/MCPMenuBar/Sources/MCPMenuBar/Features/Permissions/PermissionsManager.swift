@@ -49,6 +49,10 @@ final class PermissionsManager: ObservableObject {
 
     private var monitorTimer: Timer?
 
+    private static var hasRequestedAccessibility = false
+    private static var hasRequestedScreenRecording = false
+    private static var hasRequestedInputMonitoring = false
+
     init() {
         refresh()
     }
@@ -99,6 +103,11 @@ final class PermissionsManager: ObservableObject {
     }
 
     func requestAccessibility() {
+        guard !Self.hasRequestedAccessibility else {
+            Logger.shared.log("Accessibility request already attempted; skipping repeat prompt.")
+            return
+        }
+        Self.hasRequestedAccessibility = true
         Logger.shared.log("Requesting Accessibility permission...")
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         let granted = AXIsProcessTrustedWithOptions(options)
@@ -119,6 +128,11 @@ final class PermissionsManager: ObservableObject {
     }
 
     func requestScreenRecording() {
+        guard !Self.hasRequestedScreenRecording else {
+            Logger.shared.log("Screen recording request already attempted; skipping repeat prompt.")
+            return
+        }
+        Self.hasRequestedScreenRecording = true
         Logger.shared.log("Requesting Screen Recording permission...")
         let granted = CGRequestScreenCaptureAccess()
         Logger.shared.log("Screen recording request result: \(granted)")
@@ -139,6 +153,11 @@ final class PermissionsManager: ObservableObject {
     }
 
     func requestInputMonitoring() {
+        guard !Self.hasRequestedInputMonitoring else {
+            Logger.shared.log("Input monitoring request already attempted; skipping repeat prompt.")
+            return
+        }
+        Self.hasRequestedInputMonitoring = true
         Logger.shared.log("Requesting Input Monitoring permission...")
         let granted = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
         Logger.shared.log("Input monitoring request result: \(granted)")
@@ -156,6 +175,17 @@ final class PermissionsManager: ObservableObject {
         guard let url = URL(string: urlString) else { return }
         Logger.shared.log("Opening System Settings for \(type.displayName): \(urlString)")
         NSWorkspace.shared.open(url)
+    }
+
+    // MARK: - Check + request
+
+    @discardableResult
+    func checkAndRequest() -> Bool {
+        if !checkAccessibility() { requestAccessibility() }
+        if !checkScreenRecording() { requestScreenRecording() }
+        if !checkInputMonitoring() { requestInputMonitoring() }
+        refresh()
+        return allPermissionsGranted()
     }
 
     // MARK: - Helpers

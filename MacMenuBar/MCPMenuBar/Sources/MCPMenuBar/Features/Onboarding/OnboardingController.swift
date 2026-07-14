@@ -9,12 +9,15 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
     var nsWindow: NSWindow? { window.window }
     private let repoRoot: URL
     private let bridgeURL: URL
+    private let permissionsManager: PermissionsManager
     private var activeTestSession: BridgeTestSession?
+    private var hasRequestedPermissions = false
 
-    init(window: OnboardingWindow? = nil, repoRoot: URL? = nil, bridgeURL: URL? = nil) {
+    init(window: OnboardingWindow? = nil, repoRoot: URL? = nil, bridgeURL: URL? = nil, permissionsManager: PermissionsManager = PermissionsManager()) {
         self.window = window ?? OnboardingWindow()
         self.repoRoot = repoRoot ?? Self.defaultRepoRoot()
         self.bridgeURL = bridgeURL ?? self.repoRoot.appendingPathComponent("MacMenuBar/bridge/mcp_bridge.py")
+        self.permissionsManager = permissionsManager
     }
 
     // MARK: - Flow
@@ -36,9 +39,23 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
     }
 
     func onboardingDidRequestPermissions() {
-        let checker = PermissionChecker()
-        let accessibility = checker.checkAccessibility()
-        let screenRecording = checker.checkScreenRecording()
+        if hasRequestedPermissions {
+            let accessibility = permissionsManager.checkAccessibility()
+            let screenRecording = permissionsManager.checkScreenRecording()
+            if accessibility && screenRecording {
+                transition(to: .installConfig)
+            } else {
+                showRestartAlert()
+            }
+            return
+        }
+
+        permissionsManager.requestAccessibility()
+        permissionsManager.requestScreenRecording()
+        hasRequestedPermissions = true
+
+        let accessibility = permissionsManager.checkAccessibility()
+        let screenRecording = permissionsManager.checkScreenRecording()
         if accessibility && screenRecording {
             transition(to: .installConfig)
         } else {
@@ -115,7 +132,7 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
     private func showPermissionsAlert() {
         let alert = NSAlert()
         alert.messageText = "Permissions Required"
-        alert.informativeText = "MCPMenuBar needs Accessibility and Screen Recording permissions. The System Settings panes have been opened. Grant them, then click Check Permissions again."
+        alert.informativeText = "MCPMenuBar needs Accessibility and Screen Recording permissions. The System Settings panes have been opened. Grant them, then quit and reopen MCPMenuBar."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "Open Privacy & Security")
         alert.addButton(withTitle: "OK")
@@ -123,6 +140,15 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
         if alert.runModal() == .alertFirstButtonReturn {
             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy")!)
         }
+    }
+
+    private func showRestartAlert() {
+        let alert = NSAlert()
+        alert.messageText = "Restart MCPMenuBar"
+        alert.informativeText = "Permissions have been requested. If you already granted them, quit and reopen MCPMenuBar to apply the change."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        _ = alert.runModal()
     }
 
     // MARK: - Config install
