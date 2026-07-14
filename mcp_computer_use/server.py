@@ -108,6 +108,24 @@ def run_shell_command(command: str = "", timeout: int = 60, cwd: str = "", pendi
 
 
 @mcp.tool()
+def process_start(command: str, cwd: str = "") -> str:
+    """Start a long-running shell command and return a process ID."""
+    return json.dumps(act.process_start(command, cwd or None))
+
+
+@mcp.tool()
+def process_read(process_id: str, timeout: float = 0.5, max_lines: int = 100) -> str:
+    """Read output from a running process."""
+    return json.dumps(act.process_read(process_id, timeout, max_lines))
+
+
+@mcp.tool()
+def process_kill(process_id: str, signal: str = "SIGTERM") -> str:
+    """Send a signal to a running process."""
+    return json.dumps(act.process_kill(process_id, signal))
+
+
+@mcp.tool()
 def open_app(name: str) -> str:
     """Open/activate a macOS application by name, e.g. 'Terminal' or 'Safari'."""
     return json.dumps(act.open_app(name))

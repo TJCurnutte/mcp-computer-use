@@ -33,6 +33,11 @@ Enterprise-grade macOS MCP server that gives your AI agent eyes, hands, and a te
   - `ocr_screenshot`, `find_text_on_screen`
   - `click_text` — click text found by OCR.
 
+- **Processes**
+  - `process_start` — start a long-running shell command.
+  - `process_read` — read output from a running process.
+  - `process_kill` — send a signal to a running process.
+
 - **Batch**
   - `batch_operations` — run a JSON list of operations sequentially.
 

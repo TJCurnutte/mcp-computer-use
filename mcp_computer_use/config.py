@@ -23,6 +23,7 @@ class Config:
     allowed_shell_commands: List[str] = field(default_factory=lambda: [
         "git", "python", "python3", "node", "npm", "npx", "yarn", "pip", "pip3", "uv",
         "ls", "pwd", "cat", "echo", "which", "whoami", "uname", "env", "printenv",
+        "bash", "sh", "zsh", "for", "while", "if", "case", "until", "function",
         "find", "grep", "sed", "awk", "head", "tail", "less", "more", "diff", "patch",
         "mkdir", "touch", "cp", "mv", "rm", "rmdir", "open", "osascript", "defaults",
         "df", "du", "ps", "top", "htop", "lsof", "netstat", "ifconfig", "networksetup",
@@ -33,7 +34,7 @@ class Config:
         "qlmanage", "pbcopy", "pbpaste", "mcp",
     ])
     blocked_shell_commands: List[str] = field(default_factory=lambda: ["rm -rf", "sudo", "su -", "mkfs", "dd", ">/dev/null", "shutdown", "reboot", "poweroff", "halt", "init 0"])
-    require_confirmation_for: List[str] = field(default_factory=lambda: ["delete", "overwrite", "sudo", "kill", "system", "rm -rf", "rm -r", "rm -f"])
+    require_confirmation_for: List[str] = field(default_factory=lambda: ["kill", "rm "])
     allowed_directories: List[str] = field(default_factory=lambda: [str(Path.home())])
 
     # Confirmation mode

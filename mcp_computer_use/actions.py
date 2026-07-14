@@ -13,6 +13,7 @@ from typing import Optional
 import pyautogui
 from .config import CONFIG
 from .ocr import find_text, find_text_lines, ocr_image
+from .process_manager import PROCESS_MANAGER
 from .security import SECURITY
 from .utils import (
     capture,
@@ -160,6 +161,29 @@ def wait(duration: float = 1.0) -> dict:
 
 PENDING_ACTIONS = {}
 PENDING_LOCK = threading.Lock()
+
+
+def process_start(command: str, cwd: Optional[str] = None) -> dict:
+    """Start a long-running shell command and return a process ID."""
+    error = SECURITY.validate_shell_command(command)
+    if error:
+        return {"error": error, "command": command}
+    if CONFIG.confirm_sensitive and SECURITY.requires_confirmation(command):
+        pending_id = str(uuid.uuid4())
+        with PENDING_LOCK:
+            PENDING_ACTIONS[pending_id] = {"type": "process_start", "command": command, "cwd": cwd}
+        return {"requires_confirmation": True, "pending_id": pending_id, "command": command}
+    return PROCESS_MANAGER.start(command, cwd)
+
+
+def process_read(process_id: str, timeout: float = 0.5, max_lines: int = 100) -> dict:
+    """Read output from a running process."""
+    return PROCESS_MANAGER.read(process_id, timeout, max_lines)
+
+
+def process_kill(process_id: str, signal: str = "SIGTERM") -> dict:
+    """Send a signal to a running process."""
+    return PROCESS_MANAGER.kill(process_id, signal)
 
 
 def _exec_shell_command(command: str, timeout: int, cwd: Optional[str]) -> dict:
@@ -541,6 +565,8 @@ def confirm_sensitive_action(pending_id: str) -> dict:
         return _exec_shell_command(action["command"], action["timeout"], action["cwd"])
     if action["type"] == "delete_file":
         return _delete_file_impl(action["path"])
+    if action["type"] == "process_start":
+        return PROCESS_MANAGER.start(action["command"], action["cwd"])
     return {"error": "unsupported pending action type", "type": action.get("type")}
 
 
