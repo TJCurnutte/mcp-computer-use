@@ -441,6 +441,12 @@ def get_status() -> dict:
             perms["screen_recording_error"] = str(e)
     except Exception:
         perms["screen_recording"] = False
+    try:
+        import ApplicationServices
+        opts = {ApplicationServices.kAXTrustedCheckOptionPrompt: False}
+        perms["accessibility"] = bool(ApplicationServices.AXIsProcessTrustedWithOptions(opts))
+    except Exception:
+        perms["accessibility"] = False
     perms["failsafe_enabled"] = pyautogui.FAILSAFE
     perms["allowed_shell_commands"] = CONFIG.allowed_shell_commands
     perms["blocked_shell_commands"] = CONFIG.blocked_shell_commands

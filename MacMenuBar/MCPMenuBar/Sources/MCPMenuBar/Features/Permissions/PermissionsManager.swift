@@ -52,6 +52,8 @@ final class PermissionsManager: ObservableObject {
     private static var hasRequestedAccessibility = false
     private static var hasRequestedScreenRecording = false
     private static var hasRequestedInputMonitoring = false
+    private static var hasRequestedPythonAccessibility = false
+    private static var hasRequestedPythonScreenRecording = false
 
     init() {
         refresh()
@@ -165,6 +167,127 @@ final class PermissionsManager: ObservableObject {
             openSystemSettings(for: .inputMonitoring)
         }
         refresh()
+    }
+
+    // MARK: - Python Interpreter Permissions
+
+    /// The Python interpreter that actually runs the mcp-computer-use server.
+    private func pythonExecutableURL() -> URL {
+        if let envPath = ProcessInfo.processInfo.environment["MCP_SERVER_ROOT"],
+           !envPath.isEmpty,
+           FileManager.default.fileExists(atPath: envPath) {
+            let venv = URL(fileURLWithPath: envPath).appendingPathComponent(".venv/bin/python")
+            if FileManager.default.fileExists(atPath: venv.path) {
+                return venv
+            }
+        }
+        let defaultVenv = URL(fileURLWithPath: "/Users/curnutte/CascadeProjects/mcp-computer-use")
+            .appendingPathComponent(".venv/bin/python")
+        if FileManager.default.fileExists(atPath: defaultVenv.path) {
+            return defaultVenv
+        }
+        return URL(fileURLWithPath: "/usr/bin/python3")
+    }
+
+    private func repoURL() -> URL {
+        if let envPath = ProcessInfo.processInfo.environment["MCP_SERVER_ROOT"],
+           !envPath.isEmpty,
+           FileManager.default.fileExists(atPath: envPath) {
+            return URL(fileURLWithPath: envPath)
+        }
+        return URL(fileURLWithPath: "/Users/curnutte/CascadeProjects/mcp-computer-use")
+    }
+
+    private func runPythonPermissionProbe() -> (accessibility: Bool, screenRecording: Bool) {
+        let script = """
+        import json
+        try:
+            import ApplicationServices
+            opts = {ApplicationServices.kAXTrustedCheckOptionPrompt: False}
+            accessibility = bool(ApplicationServices.AXIsProcessTrustedWithOptions(opts))
+        except Exception:
+            accessibility = False
+        try:
+            import Quartz
+            screen_recording = bool(Quartz.CGPreflightScreenCaptureAccess())
+        except Exception:
+            screen_recording = False
+        print(json.dumps({"accessibility": accessibility, "screen_recording": screen_recording}))
+        """
+
+        let process = Process()
+        process.executableURL = pythonExecutableURL()
+        process.arguments = ["-c", script]
+        process.currentDirectoryURL = repoURL()
+
+        let outPipe = Pipe()
+        let errPipe = Pipe()
+        process.standardOutput = outPipe
+        process.standardError = errPipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            Logger.shared.log("Python permission probe failed to run: \(error)")
+            return (false, false)
+        }
+
+        let outData = outPipe.fileHandleForReading.readDataToEndOfFile()
+        let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+        if let err = String(data: errData, encoding: .utf8), !err.isEmpty {
+            Logger.shared.log("Python permission probe stderr: \(err)")
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: outData) as? [String: Bool] else {
+            Logger.shared.log("Python permission probe returned invalid JSON")
+            return (false, false)
+        }
+        return (
+            accessibility: json["accessibility"] ?? false,
+            screenRecording: json["screen_recording"] ?? false
+        )
+    }
+
+    @discardableResult
+    func checkPythonAccessibility() -> Bool {
+        let granted = runPythonPermissionProbe().accessibility
+        Logger.shared.log("Python accessibility check: \(granted)")
+        return granted
+    }
+
+    @discardableResult
+    func checkPythonScreenRecording() -> Bool {
+        let granted = runPythonPermissionProbe().screenRecording
+        Logger.shared.log("Python screen recording check: \(granted)")
+        return granted
+    }
+
+    func requestPythonAccessibility() {
+        guard !Self.hasRequestedPythonAccessibility else {
+            Logger.shared.log("Python accessibility request already attempted; skipping repeat prompt.")
+            return
+        }
+        Self.hasRequestedPythonAccessibility = true
+        Logger.shared.log("Requesting Python Accessibility permission (opens System Settings)")
+        openSystemSettings(for: .accessibility)
+    }
+
+    func requestPythonScreenRecording() {
+        guard !Self.hasRequestedPythonScreenRecording else {
+            Logger.shared.log("Python screen recording request already attempted; skipping repeat prompt.")
+            return
+        }
+        Self.hasRequestedPythonScreenRecording = true
+        Logger.shared.log("Requesting Python Screen Recording permission (opens System Settings)")
+        openSystemSettings(for: .screenRecording)
+    }
+
+    @discardableResult
+    func checkAndRequestPythonPermissions() -> Bool {
+        if !checkPythonAccessibility() { requestPythonAccessibility() }
+        if !checkPythonScreenRecording() { requestPythonScreenRecording() }
+        return checkPythonAccessibility() && checkPythonScreenRecording()
     }
 
     // MARK: - System Settings

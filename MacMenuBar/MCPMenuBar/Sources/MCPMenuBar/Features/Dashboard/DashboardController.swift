@@ -247,11 +247,11 @@ extension DashboardController: DashboardViewControllerDelegate {
     func dashboardViewControllerDidSelectCheckPermissions() {
         updatePermissionStatus("Checking permissions...")
 
-        let access = permissionsManager.checkAccessibility()
-        let screen = permissionsManager.checkScreenRecording()
+        let access = permissionsManager.checkPythonAccessibility()
+        let screen = permissionsManager.checkPythonScreenRecording()
 
-        let accessLabel = access ? "✅ Accessibility OK" : "⚠️ Accessibility needed (restart after granting)"
-        let screenLabel = screen ? "✅ Screen Recording OK" : "⚠️ Screen Recording needed (restart after granting)"
+        let accessLabel = access ? "✅ Accessibility OK" : "⚠️ Accessibility needed (Python interpreter)"
+        let screenLabel = screen ? "✅ Screen Recording OK" : "⚠️ Screen Recording needed (Python interpreter)"
         updatePermissionStatus("\(accessLabel), \(screenLabel)")
     }
 

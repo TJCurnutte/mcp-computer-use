@@ -70,7 +70,7 @@ extension AppDelegate: MenuManagerDelegate {
     }
 
     func menuManagerDidSelectCheckPermissions() {
-        permissionsManager.checkAndRequest()
+        permissionsManager.checkAndRequestPythonPermissions()
     }
 
     func menuManagerDidSelectOpenLogs() {

@@ -40,8 +40,8 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
 
     func onboardingDidRequestPermissions() {
         if hasRequestedPermissions {
-            let accessibility = permissionsManager.checkAccessibility()
-            let screenRecording = permissionsManager.checkScreenRecording()
+            let accessibility = permissionsManager.checkPythonAccessibility()
+            let screenRecording = permissionsManager.checkPythonScreenRecording()
             if accessibility && screenRecording {
                 transition(to: .installConfig)
             } else {
@@ -50,12 +50,12 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
             return
         }
 
-        permissionsManager.requestAccessibility()
-        permissionsManager.requestScreenRecording()
+        permissionsManager.requestPythonAccessibility()
+        permissionsManager.requestPythonScreenRecording()
         hasRequestedPermissions = true
 
-        let accessibility = permissionsManager.checkAccessibility()
-        let screenRecording = permissionsManager.checkScreenRecording()
+        let accessibility = permissionsManager.checkPythonAccessibility()
+        let screenRecording = permissionsManager.checkPythonScreenRecording()
         if accessibility && screenRecording {
             transition(to: .installConfig)
         } else {
@@ -132,7 +132,7 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
     private func showPermissionsAlert() {
         let alert = NSAlert()
         alert.messageText = "Permissions Required"
-        alert.informativeText = "MCPMenuBar needs Accessibility and Screen Recording permissions. The System Settings panes have been opened. Grant them, then quit and reopen MCPMenuBar."
+        alert.informativeText = "MCPMenuBar needs Accessibility and Screen Recording permissions for the Python interpreter that .venv/bin/python resolves to. The System Settings panes have been opened. Grant them, then quit and reopen MCPMenuBar."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "Open Privacy & Security")
         alert.addButton(withTitle: "OK")
