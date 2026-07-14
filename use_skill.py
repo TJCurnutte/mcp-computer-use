@@ -1,4 +1,4 @@
-"""Use the MCP computer-use skill to commit the cursor coordinate fix."""
+"""Use the MCP computer-use skill to commit the list_windows click_scale fix."""
 
 import asyncio
 import json
@@ -32,7 +32,7 @@ async def main():
         cwd = "/Users/curnutte/CascadeProjects/mcp-computer-use"
         await call_tool(session, "run_shell_command", {"command": "git add -A", "cwd": cwd})
         await call_tool(session, "run_shell_command", {
-            "command": "git commit -m 'Fix get_cursor_position to return logical screenshot coordinates'",
+            "command": "git commit -m 'Add click_scale to list_windows and use it in use_skill'",
             "cwd": cwd,
         })
 

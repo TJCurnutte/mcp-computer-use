@@ -301,7 +301,12 @@ def list_windows() -> dict:
                     "alpha": win.get(Quartz.kCGWindowAlpha),
                 }
             )
-        return {"windows": windows, "count": len(windows)}
+        return {
+            "windows": windows,
+            "count": len(windows),
+            "scale_factor": _get_scale_factor(),
+            "click_scale": click_scale_for_all_screens(CONFIG.max_screenshot_dim),
+        }
     except Exception as e:
         logger.exception("Quartz list_windows failed, falling back to AppleScript")
         return _run_applescript(list_windows_applescript())
