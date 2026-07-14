@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+*.eggs/
+
+# Virtualenv
+.venv/
+venv/
+env/
+
+# Logs
+logs/
+*.log
+
+# Backups
+*.bak
+*.swp
+*.tmp
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

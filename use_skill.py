@@ -1,4 +1,4 @@
-"""Use the MCP computer-use skill to set up the project git repo."""
+"""Use the MCP computer-use skill to clean up the git repo after .venv was accidentally committed."""
 
 import asyncio
 import json
@@ -13,7 +13,7 @@ async def call_tool(session, name, args):
     result = await session.call_tool(name, arguments=args)
     text = result.content[0].text
     print(f"\n[{name}] {json.dumps(args)}")
-    print(text[:1000])
+    print(text[:1500])
     return json.loads(text)
 
 
@@ -30,11 +30,17 @@ async def main():
         await session.initialize()
 
         cwd = "/Users/curnutte/CascadeProjects/mcp-computer-use"
-        await call_tool(session, "run_shell_command", {"command": "git init", "cwd": cwd})
-        await call_tool(session, "run_shell_command", {"command": "git config user.email 'agent@example.com'", "cwd": cwd})
-        await call_tool(session, "run_shell_command", {"command": "git config user.name 'MCP Agent'", "cwd": cwd})
+        # Remove accidentally tracked build artifacts from the index
+        await call_tool(session, "run_shell_command", {
+            "command": "git rm -r --cached --ignore-unmatch .venv __pycache__ mcp_computer_use/__pycache__ server.py.bak",
+            "cwd": cwd,
+        })
+        await call_tool(session, "run_shell_command", {"command": "git add .gitignore", "cwd": cwd})
         await call_tool(session, "run_shell_command", {"command": "git add -A", "cwd": cwd})
-        await call_tool(session, "run_shell_command", {"command": "git commit -m 'Initial commit of mcp-computer-use enterprise package'", "cwd": cwd})
+        await call_tool(session, "run_shell_command", {
+            "command": "git commit -m 'Add .gitignore and remove .venv/__pycache__ from tracked files'",
+            "cwd": cwd,
+        })
 
 
 if __name__ == "__main__":
