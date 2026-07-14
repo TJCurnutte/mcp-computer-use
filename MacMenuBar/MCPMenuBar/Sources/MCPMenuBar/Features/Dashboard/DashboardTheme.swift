@@ -1,3 +1,4 @@
+// FILE: Sources/MCPMenuBar/Features/Dashboard/DashboardTheme.swift
 import AppKit
 
 /// Shared color, typography, and layout values for the dashboard.
@@ -5,41 +6,51 @@ import AppKit
 /// stays consistent across DashboardViewController, DashboardController, and DashboardWindow.
 enum DashboardTheme {
     // MARK: - Colors
-    static let backgroundColor: NSColor = NSColor.windowBackgroundColor.withAlphaComponent(0.78)
-    static let cardBackground: NSColor = NSColor.controlBackgroundColor.withAlphaComponent(0.65)
+    static let backgroundColor: NSColor = NSColor.windowBackgroundColor.withAlphaComponent(0.55)
+    static let cardBackground: NSColor = NSColor.controlBackgroundColor.withAlphaComponent(0.52)
     static let primaryText: NSColor = .labelColor
     static let secondaryText: NSColor = .secondaryLabelColor
     static let accent: NSColor = .controlAccentColor
 
     static let statusIdle: NSColor = .secondaryLabelColor
-    static let statusStarting: NSColor = .systemYellow
+    static let statusStarting: NSColor = .systemOrange
     static let statusRunning: NSColor = .systemGreen
     static let statusError: NSColor = .systemRed
 
-    // MARK: - Glass/Native refinements
-    static let cardBorder: NSColor = NSColor.separatorColor.withAlphaComponent(0.35)
-    static let cardShadow: NSColor = NSColor.black.withAlphaComponent(0.18)
-    static let glassTint: NSColor = NSColor.windowBackgroundColor.withAlphaComponent(0.45)
-    static let accentHover: NSColor = NSColor.controlAccentColor.withAlphaComponent(0.80)
+    // MARK: - Glass / Native refinements
+    static let cardBorder: NSColor = NSColor.separatorColor.withAlphaComponent(0.28)
+    static let cardShadow: NSColor = NSColor.black.withAlphaComponent(0.14)
+    static let glassTint: NSColor = NSColor.windowBackgroundColor.withAlphaComponent(0.28)
+    static let accentHover: NSColor = NSColor.controlAccentColor.withAlphaComponent(0.85)
+    static let buttonFill: NSColor = NSColor.controlBackgroundColor.withAlphaComponent(0.55)
+    static let buttonBorder: NSColor = NSColor.separatorColor.withAlphaComponent(0.35)
+    static let headerDivider: NSColor = NSColor.separatorColor.withAlphaComponent(0.22)
 
     // MARK: - Typography
-    static let fontTitle: NSFont = NSFont.boldSystemFont(ofSize: 22)
-    static let fontHeadline: NSFont = NSFont.boldSystemFont(ofSize: 15)
-    static let fontBody: NSFont = NSFont.systemFont(ofSize: 13)
-    static let fontMonospaced: NSFont = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
-    static let fontCaption: NSFont = NSFont.systemFont(ofSize: 11)
-    static let fontSmall: NSFont = NSFont.systemFont(ofSize: 10)
+    static let fontTitle: NSFont = .systemFont(ofSize: 20, weight: .semibold)
+    static let fontHeadline: NSFont = .systemFont(ofSize: 13, weight: .semibold)
+    static let fontBody: NSFont = .systemFont(ofSize: 13, weight: .medium)
+    static let fontMonospaced: NSFont = .monospacedSystemFont(ofSize: 11.5, weight: .regular)
+    static let fontCaption: NSFont = .systemFont(ofSize: 11, weight: .regular)
+    static let fontSmall: NSFont = .systemFont(ofSize: 10, weight: .medium)
+    static let fontSection: NSFont = .systemFont(ofSize: 11, weight: .semibold)
 
     // MARK: - Layout
-    static let spacing: CGFloat = 16
-    static let padding: CGFloat = 24
-    static let cardCornerRadius: CGFloat = 16
-    static let buttonHeight: CGFloat = 32
-    static let buttonIconSize: CGFloat = 16
+    static let spacing: CGFloat = 14
+    static let padding: CGFloat = 20
+    static let cardCornerRadius: CGFloat = 14
+    static let buttonHeight: CGFloat = 34
+    static let buttonIconSize: CGFloat = 13
 
-    // MARK: - New layout helpers
-    static let cardPadding: CGFloat = 20
-    static let cardBorderWidth: CGFloat = 1
-    static let buttonCornerRadius: CGFloat = 8
-    static let headerHeight: CGFloat = 52
+    // MARK: - Card / control helpers
+    static let cardPadding: CGFloat = 16
+    static let cardBorderWidth: CGFloat = 0.5
+    static let buttonCornerRadius: CGFloat = 9
+    static let headerHeight: CGFloat = 56
+    static let contentTopInset: CGFloat = 52
+    static let cardShadowRadius: CGFloat = 10
+    static let cardShadowOffset = CGSize(width: 0, height: -1)
+    static let cardShadowOpacity: Float = 0.12
+    static let minWindowSize = NSSize(width: 520, height: 560)
+    static let defaultWindowSize = NSSize(width: 560, height: 680)
 }

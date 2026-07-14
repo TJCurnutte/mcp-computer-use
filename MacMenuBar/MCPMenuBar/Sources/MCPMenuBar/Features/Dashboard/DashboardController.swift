@@ -1,3 +1,4 @@
+// FILE: Sources/MCPMenuBar/Features/Dashboard/DashboardController.swift
 import Foundation
 import AppKit
 
@@ -97,6 +98,18 @@ final class DashboardController {
         }
     }
 
+    private func updatePermissionStatus(_ text: String) {
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.updatePermissionStatus(text: text)
+        }
+    }
+
+    private func updateTestResult(_ text: String) {
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.updateTestResult(text: text)
+        }
+    }
+
     private func refreshServerState() {
         if FileManager.default.fileExists(atPath: Paths.portFile.path),
            let text = try? String(contentsOf: Paths.portFile, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines),
@@ -106,6 +119,111 @@ final class DashboardController {
             currentState = .idle
         }
         updateUI()
+    }
+
+    private func runTestBridge() {
+        let process = Process()
+        process.executableURL = pythonURL
+        process.arguments = [testBridgeURL.path]
+        process.currentDirectoryURL = repoURL
+
+        let stdout = Pipe()
+        let stderr = Pipe()
+        process.standardOutput = stdout
+        process.standardError = stderr
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            let outData = stdout.fileHandleForReading.readDataToEndOfFile()
+            let errData = stderr.fileHandleForReading.readDataToEndOfFile()
+            let outText = String(data: outData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let errText = String(data: errData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+            var result = ""
+            if !outText.isEmpty {
+                result += outText
+            }
+            if !errText.isEmpty {
+                if !result.isEmpty { result += "\n\n" }
+                result += "stderr:\n\(errText)"
+            }
+            if result.isEmpty {
+                result = process.terminationStatus == 0
+                    ? "Bridge test completed successfully (no output)."
+                    : "Bridge test failed with exit code \(process.terminationStatus) (no output)."
+            } else if process.terminationStatus != 0 {
+                result += "\n\nExit code: \(process.terminationStatus)"
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                self?.isTestingBridge = false
+                self?.updateTestResult(result)
+                self?.updateUI()
+            }
+        } catch {
+            DispatchQueue.main.async { [weak self] in
+                self?.isTestingBridge = false
+                self?.updateTestResult("Failed to run bridge test: \(error.localizedDescription)")
+                self?.updateUI()
+            }
+        }
+    }
+
+    private func bridgeConfigJSON(port: UInt16) -> String {
+        // Cursor / Claude Desktop style MCP server entry pointing at the local bridge.
+        let pythonPath = pythonURL.path
+        let bridgePath = mcpBridgeURL.path
+        let rootPath = repoURL.path
+
+        let config: [String: Any] = [
+            "mcpServers": [
+                "mcp-computer-use": [
+                    "command": pythonPath,
+                    "args": [bridgePath],
+                    "env": [
+                        "MCP_SERVER_ROOT": rootPath,
+                        "MCP_BRIDGE_PORT": "\(port)"
+                    ]
+                ]
+            ]
+        ]
+
+        guard JSONSerialization.isValidJSONObject(config),
+              let data = try? JSONSerialization.data(withJSONObject: config, options: [.prettyPrinted, .sortedKeys]),
+              let text = String(data: data, encoding: .utf8) else {
+            return """
+            {
+              "mcpServers": {
+                "mcp-computer-use": {
+                  "command": "\(pythonPath)",
+                  "args": ["\(bridgePath)"],
+                  "env": {
+                    "MCP_SERVER_ROOT": "\(rootPath)",
+                    "MCP_BRIDGE_PORT": "\(port)"
+                  }
+                }
+              }
+            }
+            """
+        }
+        return text
+    }
+
+    func bridgeConfigSnippet() -> String {
+        let port: UInt16
+        if case .running(let runningPort) = currentState {
+            port = runningPort
+        } else if FileManager.default.fileExists(atPath: Paths.portFile.path),
+                  let text = try? String(contentsOf: Paths.portFile, encoding: .utf8)
+                    .trimmingCharacters(in: .whitespacesAndNewlines),
+                  let parsed = UInt16(text) {
+            port = parsed
+        } else {
+            port = 8765
+        }
+        return bridgeConfigJSON(port: port)
     }
 }
 
@@ -165,67 +283,28 @@ extension DashboardController: DashboardViewControllerDelegate {
     }
 
     func dashboardViewControllerDidSelectCopyBridgeConfig() {
-        let snippet = bridgeConfigSnippet()
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(snippet, forType: .string)
-        viewController?.updateTestResult(text: "Bridge config copied to pasteboard.")
-    }
-
-    private func updatePermissionStatus(_ text: String) {
-        viewController?.updatePermissionStatus(text: text)
-    }
-
-    private func runTestBridge() {
-        let process = Process()
-        process.executableURL = pythonURL
-        process.arguments = [testBridgeURL.path]
-        process.currentDirectoryURL = repoURL
-        process.environment = ["PYTHONUNBUFFERED": "1"]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-
-        process.terminationHandler = { [weak self] _ in
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            DispatchQueue.main.async {
-                self?.isTestingBridge = false
-                self?.viewController?.updateTestResult(text: output.isEmpty ? "No output" : output)
-                self?.updateUI()
-            }
+        let port: UInt16
+        if case .running(let runningPort) = currentState {
+            port = runningPort
+        } else if FileManager.default.fileExists(atPath: Paths.portFile.path),
+                  let text = try? String(contentsOf: Paths.portFile, encoding: .utf8)
+                    .trimmingCharacters(in: .whitespacesAndNewlines),
+                  let parsed = UInt16(text) {
+            port = parsed
+        } else {
+            // Still useful to copy a template when the server is stopped.
+            port = 0
         }
 
-        do {
-            try process.run()
-        } catch {
-            DispatchQueue.main.async { [weak self] in
-                self?.isTestingBridge = false
-                self?.viewController?.updateTestResult(text: "Failed to start test: \(error.localizedDescription)")
-                self?.updateUI()
-            }
-        }
-    }
+        let config = bridgeConfigJSON(port: port == 0 ? 8765 : port)
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(config, forType: .string)
 
-    func bridgeConfigSnippet() -> String {
-        """
-        {
-          "version": 1,
-          "mcpServers": {
-            "mcp-computer-use": {
-              "command": "\(pythonURL.path)",
-              "args": [
-                "\(mcpBridgeURL.path)"
-              ],
-              "cwd": "\(repoURL.path)"
-            }
-          },
-          "permissions": {
-            "allow": [
-              "mcp__*"
-            ]
-          }
+        if port == 0 {
+            updateTestResult("Bridge config copied to clipboard (template port 8765).\nStart the server to get the live port, then copy again if needed.\n\n\(config)")
+        } else {
+            updateTestResult("Bridge config copied to clipboard (port \(port)).\n\n\(config)")
         }
-        """
     }
 }
