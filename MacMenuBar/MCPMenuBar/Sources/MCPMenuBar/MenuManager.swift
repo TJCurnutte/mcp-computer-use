@@ -1,11 +1,12 @@
 import AppKit
+import Combine
 
 protocol MenuManagerDelegate: AnyObject {
     func menuManagerDidSelectStart()
     func menuManagerDidSelectStop()
     func menuManagerDidSelectCheckPermissions()
     func menuManagerDidSelectOpenLogs()
-    func menuManagerDidSelectCopyBridgePath()
+    func menuManagerDidSelectCopyBridgeConfig()
 }
 
 enum MenuIconState {
@@ -19,6 +20,10 @@ final class MenuManager: NSObject {
     weak var delegate: MenuManagerDelegate?
     private let statusItem: NSStatusItem
     private let statusMenuItem: NSMenuItem
+    private var startItem: NSMenuItem!
+    private var stopItem: NSMenuItem!
+    private var startAtLoginItem: NSMenuItem!
+    private var cancellables = Set<AnyCancellable>()
 
     init(delegate: MenuManagerDelegate?) {
         self.delegate = delegate
@@ -27,6 +32,7 @@ final class MenuManager: NSObject {
         statusMenuItem.isEnabled = false
         super.init()
         setupMenu()
+        bindStartupManager()
         updateStatus(text: "MCPMenuBar: Idle", state: .idle)
     }
 
@@ -36,11 +42,21 @@ final class MenuManager: NSObject {
         menu.addItem(statusMenuItem)
         menu.addItem(NSMenuItem.separator())
 
-        let startItem = NSMenuItem(title: "Start Server", action: #selector(startServer), keyEquivalent: "")
+        let dashboardItem = NSMenuItem(title: "Open Dashboard", action: #selector(showDashboard), keyEquivalent: "d")
+        dashboardItem.target = self
+        menu.addItem(dashboardItem)
+
+        let onboardingItem = NSMenuItem(title: "Open Onboarding", action: #selector(showOnboarding), keyEquivalent: "")
+        onboardingItem.target = self
+        menu.addItem(onboardingItem)
+
+        menu.addItem(NSMenuItem.separator())
+
+        startItem = NSMenuItem(title: "Start Server", action: #selector(startServer), keyEquivalent: "")
         startItem.target = self
         menu.addItem(startItem)
 
-        let stopItem = NSMenuItem(title: "Stop Server", action: #selector(stopServer), keyEquivalent: "")
+        stopItem = NSMenuItem(title: "Stop Server", action: #selector(stopServer), keyEquivalent: "")
         stopItem.target = self
         menu.addItem(stopItem)
 
@@ -48,13 +64,18 @@ final class MenuManager: NSObject {
         checkItem.target = self
         menu.addItem(checkItem)
 
+        startAtLoginItem = NSMenuItem(title: "Start at Login", action: #selector(toggleStartAtLogin), keyEquivalent: "")
+        startAtLoginItem.target = self
+        startAtLoginItem.state = StartupManager.shared.startAtLoginEnabled ? .on : .off
+        menu.addItem(startAtLoginItem)
+
+        let copyItem = NSMenuItem(title: "Copy Bridge Config", action: #selector(copyBridgeConfig), keyEquivalent: "")
+        copyItem.target = self
+        menu.addItem(copyItem)
+
         let logsItem = NSMenuItem(title: "Open Logs", action: #selector(openLogs), keyEquivalent: "")
         logsItem.target = self
         menu.addItem(logsItem)
-
-        let copyItem = NSMenuItem(title: "Copy Bridge Path", action: #selector(copyBridgePath), keyEquivalent: "")
-        copyItem.target = self
-        menu.addItem(copyItem)
 
         menu.addItem(NSMenuItem.separator())
 
@@ -65,9 +86,33 @@ final class MenuManager: NSObject {
         statusItem.menu = menu
     }
 
+    private func bindStartupManager() {
+        StartupManager.shared.$startAtLoginEnabled
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] enabled in
+                self?.startAtLoginItem?.state = enabled ? .on : .off
+            }
+            .store(in: &cancellables)
+    }
+
     func updateStatus(text: String, state: MenuIconState) {
         statusMenuItem.title = text
         setIcon(state)
+
+        switch state {
+        case .idle:
+            startItem?.isEnabled = true
+            stopItem?.isEnabled = false
+        case .starting:
+            startItem?.isEnabled = false
+            stopItem?.isEnabled = true
+        case .running:
+            startItem?.isEnabled = false
+            stopItem?.isEnabled = true
+        case .error:
+            startItem?.isEnabled = true
+            stopItem?.isEnabled = false
+        }
     }
 
     private func setIcon(_ state: MenuIconState) {
@@ -92,6 +137,14 @@ final class MenuManager: NSObject {
         }
     }
 
+    @objc private func showDashboard() {
+        AppLifecycleManager.shared.showDashboard()
+    }
+
+    @objc private func showOnboarding() {
+        AppLifecycleManager.shared.showOnboarding()
+    }
+
     @objc private func startServer() {
         delegate?.menuManagerDidSelectStart()
     }
@@ -104,12 +157,16 @@ final class MenuManager: NSObject {
         delegate?.menuManagerDidSelectCheckPermissions()
     }
 
-    @objc private func openLogs() {
-        delegate?.menuManagerDidSelectOpenLogs()
+    @objc private func toggleStartAtLogin() {
+        _ = StartupManager.shared.toggleStartAtLogin()
     }
 
-    @objc private func copyBridgePath() {
-        delegate?.menuManagerDidSelectCopyBridgePath()
+    @objc private func copyBridgeConfig() {
+        delegate?.menuManagerDidSelectCopyBridgeConfig()
+    }
+
+    @objc private func openLogs() {
+        delegate?.menuManagerDidSelectOpenLogs()
     }
 
     @objc private func quit() {

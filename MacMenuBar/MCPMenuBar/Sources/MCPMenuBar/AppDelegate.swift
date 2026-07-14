@@ -5,7 +5,7 @@ import Foundation
 final class AppDelegate: NSObject, NSApplicationDelegate {
     static func main() {
         let app = NSApplication.shared
-        app.setActivationPolicy(.accessory)
+        app.setActivationPolicy(AppLifecycleManager.shared.isFirstRun ? .regular : .accessory)
         let delegate = AppDelegate()
         app.delegate = delegate
         app.run()
@@ -14,20 +14,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuManager: MenuManager!
     private var serverManager: ServerManager!
     private var permissionChecker: PermissionChecker!
+    private var dashboardController: DashboardController!
+    private var onboardingController: OnboardingController!
+    private var hotkeyManager: HotkeyManager!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.shared.log("MCPMenuBar launched")
 
         permissionChecker = PermissionChecker()
-        menuManager = MenuManager(delegate: self)
-        serverManager = ServerManager()
-        serverManager.delegate = self
 
-        menuManager.updateStatus(text: "Idle", state: .idle)
+        serverManager = ServerManager()
+
+        dashboardController = DashboardController(
+            serverManager: serverManager,
+            permissionChecker: permissionChecker
+        )
+        dashboardController.stateForwardDelegate = self
+
+        onboardingController = OnboardingController()
+
+        hotkeyManager = HotkeyManager.shared
+        hotkeyManager.dashboardController = dashboardController
+        hotkeyManager.start()
+
+        menuManager = MenuManager(delegate: self)
+
+        // Wire the lifecycle manager to use the real onboarding and dashboard windows.
+        AppLifecycleManager.shared.onboardingWindowFactory = { [weak self] in
+            self?.onboardingController?.start()
+            return self?.onboardingController?.nsWindow
+        }
+        AppLifecycleManager.shared.dashboardWindowFactory = { [weak self] in
+            self?.dashboardController?.show()
+            return self?.dashboardController?.nsWindow
+        }
+
         serverManager.start()
+        AppLifecycleManager.shared.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        hotkeyManager?.stop()
         serverManager?.stop()
         Logger.shared.log("MCPMenuBar terminating")
     }
@@ -50,19 +77,11 @@ extension AppDelegate: MenuManagerDelegate {
         NSWorkspace.shared.open(Paths.logDirectory)
     }
 
-    func menuManagerDidSelectCopyBridgePath() {
-        guard FileManager.default.fileExists(atPath: Paths.portFile.path),
-              let text = try? String(contentsOf: Paths.portFile, encoding: .utf8)
-                .trimmingCharacters(in: .whitespacesAndNewlines),
-              !text.isEmpty,
-              let port = UInt16(text) else {
-            Logger.shared.log("No bridge port available to copy")
-            return
-        }
-        let address = "127.0.0.1:\(port)"
+    func menuManagerDidSelectCopyBridgeConfig() {
+        let snippet = dashboardController?.bridgeConfigSnippet() ?? ""
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(address, forType: .string)
-        Logger.shared.log("Copied bridge address: \(address)")
+        NSPasteboard.general.setString(snippet, forType: .string)
+        Logger.shared.log("Copied bridge config snippet to pasteboard")
     }
 }
 

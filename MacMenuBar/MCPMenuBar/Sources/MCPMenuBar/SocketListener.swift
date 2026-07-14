@@ -21,7 +21,20 @@ final class SocketListener {
     func start() {
         isCancelled = false
         do {
-            let listener = try NWListener(using: .tcp, on: .any)
+            let tcpOptions = NWProtocolTCP.Options()
+            tcpOptions.enableKeepalive = true
+            tcpOptions.keepaliveIdle = 30
+            tcpOptions.keepaliveInterval = 10
+            tcpOptions.keepaliveCount = 3
+
+            let parameters = NWParameters(tls: nil, tcp: tcpOptions)
+            parameters.allowLocalEndpointReuse = true
+            parameters.requiredLocalEndpoint = NWEndpoint.hostPort(
+                host: .ipv4(.loopback),
+                port: .any
+            )
+
+            let listener = try NWListener(using: parameters)
             listener.stateUpdateHandler = { [weak self] state in
                 self?.handleState(state)
             }

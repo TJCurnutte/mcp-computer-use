@@ -1,0 +1,11 @@
+MCPMenuBar
+
+To install:
+
+1. Drag MCPMenuBar.app onto the Applications alias.
+2. Eject this disk image.
+3. Open MCPMenuBar from /Applications.
+4. Follow the first-run onboarding to grant permissions and install the MCP bridge.
+
+Optional: to start at login, install the LaunchAgent from
+MacMenuBar/scripts/install_launchagent.sh.

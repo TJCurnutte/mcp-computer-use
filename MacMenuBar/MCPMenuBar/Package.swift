@@ -9,6 +9,16 @@ let package = Package(
         .executableTarget(
             name: "MCPMenuBar",
             dependencies: [],
+            exclude: [
+                "IPC.md",
+                "Features/Dashboard/Dashboard.md",
+                "Features/Hotkey/Hotkey.md",
+                "Features/Lifecycle/Lifecycle.md",
+                "Features/Onboarding/Onboarding.md",
+                "Features/Onboarding/OnboardingUI.md",
+                "Features/Permissions/Permissions.md",
+                "Features/Startup/Startup.md"
+            ],
             linkerSettings: [
                 .linkedFramework("Network")
             ]
