@@ -20,9 +20,20 @@ class Config:
     log_dir: Path = field(default_factory=lambda: Path.home() / ".mcp-computer-use" / "logs")
 
     # Security
-    allowed_shell_commands: List[str] = field(default_factory=lambda: ["git", "python", "python3", "node", "npm", "ls", "pwd", "cat", "echo", "which"])
-    blocked_shell_commands: List[str] = field(default_factory=lambda: ["rm -rf", "sudo", "mkfs", "dd", ">/dev/null", "shutdown", "reboot", "poweroff"])
-    require_confirmation_for: List[str] = field(default_factory=lambda: ["delete", "overwrite", "sudo", "kill", "system", "rm -rf"])
+    allowed_shell_commands: List[str] = field(default_factory=lambda: [
+        "git", "python", "python3", "node", "npm", "npx", "yarn", "pip", "pip3", "uv",
+        "ls", "pwd", "cat", "echo", "which", "whoami", "uname", "env", "printenv",
+        "find", "grep", "sed", "awk", "head", "tail", "less", "more", "diff", "patch",
+        "mkdir", "touch", "cp", "mv", "rm", "rmdir", "open", "osascript", "defaults",
+        "df", "du", "ps", "top", "htop", "lsof", "netstat", "ifconfig", "networksetup",
+        "pmset", "system_profiler", "mdfind", "launchctl", "plutil", "xcode-select", "xcrun",
+        "swift", "brew", "port", "code", "cursor", "windsurf", "claude", "zed", "fleet",
+        "tar", "zip", "unzip", "gzip", "gunzip", "rsync", "scp", "sftp", "curl", "wget",
+        "ssh", "ssh-keygen", "sqlite3", "sqlite", "say", "screencapture", "caffeinate",
+        "qlmanage", "pbcopy", "pbpaste", "mcp",
+    ])
+    blocked_shell_commands: List[str] = field(default_factory=lambda: ["rm -rf", "sudo", "su -", "mkfs", "dd", ">/dev/null", "shutdown", "reboot", "poweroff", "halt", "init 0"])
+    require_confirmation_for: List[str] = field(default_factory=lambda: ["delete", "overwrite", "sudo", "kill", "system", "rm -rf", "rm -r", "rm -f"])
     allowed_directories: List[str] = field(default_factory=lambda: [str(Path.home())])
 
     # Confirmation mode

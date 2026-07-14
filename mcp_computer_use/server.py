@@ -96,9 +96,9 @@ def wait(duration: float = 1.0) -> str:
 
 
 @mcp.tool()
-def run_shell_command(command: str, timeout: int = 60, cwd: str = "") -> str:
+def run_shell_command(command: str = "", timeout: int = 60, cwd: str = "", pending_id: str = "") -> str:
     """Run a shell command. Only allowlisted commands are permitted."""
-    return json.dumps(act.run_shell_command(command, timeout, cwd or None))
+    return json.dumps(act.run_shell_command(command, timeout, cwd or None, pending_id))
 
 
 @mcp.tool()
@@ -164,6 +164,42 @@ def get_status() -> str:
 def stop() -> str:
     """Stop the MCP server process."""
     return json.dumps(act.stop())
+
+
+@mcp.tool()
+def read_file(path: str) -> str:
+    """Read a file under allowed directories."""
+    return json.dumps(act.read_file(path))
+
+
+@mcp.tool()
+def write_file(path: str, content: str) -> str:
+    """Write a file under allowed directories."""
+    return json.dumps(act.write_file(path, content))
+
+
+@mcp.tool()
+def list_dir(path: str) -> str:
+    """List files and directories under allowed directories."""
+    return json.dumps(act.list_dir(path))
+
+
+@mcp.tool()
+def delete_file(path: str) -> str:
+    """Delete a file or directory under allowed directories."""
+    return json.dumps(act.delete_file(path))
+
+
+@mcp.tool()
+def confirm_sensitive_action(pending_id: str) -> str:
+    """Confirm and execute a previously queued sensitive action."""
+    return json.dumps(act.confirm_sensitive_action(pending_id))
+
+
+@mcp.tool()
+def click_text(text: str, display: int = 0, button: str = "left", click_index: int = 0) -> str:
+    """Find the given text on screen and click the center of the n-th match."""
+    return json.dumps(act.click_text(text, display, button, click_index))
 
 
 def main():

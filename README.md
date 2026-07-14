@@ -21,8 +21,16 @@ Enterprise-grade macOS MCP server that gives your AI agent eyes, hands, and a te
   - `focus_window` — focus a window.
   - `clipboard_get`, `clipboard_set`
   - `run_shell_command` — run a shell command (allowlisted).
+  - `confirm_sensitive_action` — approve a pending shell or file action.
   - `get_status` — show server status and permission state.
   - `stop` — stop the MCP server process.
+
+- **File system**
+  - `read_file`, `write_file`, `list_dir`, `delete_file`
+
+- **OCR / automation**
+  - `ocr_screenshot`, `find_text_on_screen`
+  - `click_text` — click text found by OCR.
 
 - **Batch**
   - `batch_operations` — run a JSON list of operations sequentially.

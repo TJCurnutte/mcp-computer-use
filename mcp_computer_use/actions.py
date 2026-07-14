@@ -4,7 +4,9 @@ import json
 import os
 import shutil
 import subprocess
+import threading
 import time
+import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -138,20 +140,11 @@ def wait(duration: float = 1.0) -> dict:
 # Terminal / shell
 # ---------------------------------------------------------------------------
 
-def run_shell_command(command: str, timeout: int = 60, cwd: Optional[str] = None) -> dict:
-    error = SECURITY.validate_shell_command(command)
-    if error:
-        return {"error": error, "command": command}
+PENDING_ACTIONS = {}
+PENDING_LOCK = threading.Lock()
 
-    if CONFIG.confirm_sensitive and SECURITY.requires_confirmation(command):
-        # In a real interactive flow we would ask the user. For this server
-        # we return an explicit request and rely on the agent to confirm.
-        return {
-            "requires_confirmation": True,
-            "command": command,
-            "message": "This command matches a sensitive pattern. Use the confirm_sensitive_action tool to approve.",
-        }
 
+def _exec_shell_command(command: str, timeout: int, cwd: Optional[str]) -> dict:
     try:
         logger.info(f"Running shell command: {command}")
         result = subprocess.run(
@@ -172,6 +165,39 @@ def run_shell_command(command: str, timeout: int = 60, cwd: Optional[str] = None
         return {"error": "command timed out", "command": command}
     except Exception as e:
         return {"error": str(e), "command": command}
+
+
+def run_shell_command(command: str = "", timeout: int = 60, cwd: Optional[str] = None, pending_id: str = "") -> dict:
+    if pending_id:
+        with PENDING_LOCK:
+            action = PENDING_ACTIONS.pop(pending_id, None)
+        if not action:
+            return {"error": "pending action not found", "pending_id": pending_id}
+        if action["type"] == "shell":
+            return _exec_shell_command(action["command"], action["timeout"], action["cwd"])
+        return {"error": "unsupported pending action type", "type": action.get("type")}
+
+    error = SECURITY.validate_shell_command(command)
+    if error:
+        return {"error": error, "command": command}
+
+    if CONFIG.confirm_sensitive and SECURITY.requires_confirmation(command):
+        pending_id = str(uuid.uuid4())
+        with PENDING_LOCK:
+            PENDING_ACTIONS[pending_id] = {"type": "shell", "command": command, "timeout": timeout, "cwd": cwd}
+        return {
+            "requires_confirmation": True,
+            "pending_id": pending_id,
+            "command": command,
+            "message": "This command matches a sensitive pattern. Use confirm_sensitive_action with pending_id to approve.",
+        }
+
+    return _exec_shell_command(command, timeout, cwd)
+
+
+def confirm_sensitive_action(pending_id: str) -> dict:
+    """Execute a previously queued sensitive action."""
+    return run_shell_command(pending_id=pending_id)
 
 
 # ---------------------------------------------------------------------------
@@ -373,4 +399,107 @@ def stop() -> dict:
         os._exit(0)
     threading.Thread(target=_exit, daemon=True).start()
     return {"stopped": True}
+
+
+# ---------------------------------------------------------------------------
+# File system
+# ---------------------------------------------------------------------------
+
+def read_file(path: str) -> dict:
+    """Read a file under allowed directories."""
+    if not SECURITY.is_allowed_path(path):
+        return {"error": "path not in allowed directories", "path": path}
+    try:
+        content = Path(path).read_text(encoding="utf-8", errors="replace")
+        return {"path": path, "content": content}
+    except Exception as e:
+        return {"error": str(e), "path": path}
+
+
+def write_file(path: str, content: str) -> dict:
+    """Write a file under allowed directories."""
+    if not SECURITY.is_allowed_path(path):
+        return {"error": "path not in allowed directories", "path": path}
+    try:
+        p = Path(path)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(content, encoding="utf-8")
+        return {"path": path, "written": True, "bytes": len(content.encode("utf-8"))}
+    except Exception as e:
+        return {"error": str(e), "path": path}
+
+
+def list_dir(path: str) -> dict:
+    """List files and directories under allowed directories."""
+    if not SECURITY.is_allowed_path(path):
+        return {"error": "path not in allowed directories", "path": path}
+    try:
+        entries = []
+        for item in Path(path).iterdir():
+            entries.append({
+                "name": item.name,
+                "path": str(item),
+                "is_dir": item.is_dir(),
+                "size": item.stat().st_size if item.is_file() else None,
+            })
+        return {"path": path, "entries": entries}
+    except Exception as e:
+        return {"error": str(e), "path": path}
+
+
+def delete_file(path: str) -> dict:
+    """Delete a file or directory under allowed directories."""
+    if not SECURITY.is_allowed_path(path):
+        return {"error": "path not in allowed directories", "path": path}
+    p = Path(path)
+    if not p.exists():
+        return {"error": "path does not exist", "path": path}
+    if p.is_dir() and any(p.iterdir()):
+        return {"error": "directory is not empty, use rm -r via shell", "path": path}
+    if CONFIG.confirm_sensitive:
+        pending_id = str(uuid.uuid4())
+        with PENDING_LOCK:
+            PENDING_ACTIONS[pending_id] = {"type": "delete_file", "path": path}
+        return {"requires_confirmation": True, "pending_id": pending_id, "path": path}
+    try:
+        if p.is_dir():
+            p.rmdir()
+        else:
+            p.unlink()
+        return {"deleted": True, "path": path}
+    except Exception as e:
+        return {"error": str(e), "path": path}
+
+
+def confirm_sensitive_action(pending_id: str) -> dict:
+    """Execute a previously queued sensitive action."""
+    # First check if it is a shell command
+    if PENDING_ACTIONS.get(pending_id, {}).get("type") == "shell":
+        return run_shell_command(pending_id=pending_id)
+    with PENDING_LOCK:
+        action = PENDING_ACTIONS.pop(pending_id, None)
+    if not action:
+        return {"error": "pending action not found", "pending_id": pending_id}
+    if action["type"] == "delete_file":
+        return delete_file(action["path"])
+    return {"error": "unsupported pending action type", "type": action.get("type")}
+
+
+# ---------------------------------------------------------------------------
+# Click text / OCR action
+# ---------------------------------------------------------------------------
+
+def click_text(text: str, display: int = 0, button: str = "left", click_index: int = 0) -> dict:
+    """Find the given text on screen and click the center of the n-th match."""
+    info = find_text_on_screen(text, display)
+    if "error" in info:
+        return info
+    matches = info.get("word_matches") or info.get("line_matches") or []
+    if not matches:
+        return {"error": "text not found", "text": text}
+    if click_index < 0 or click_index >= len(matches):
+        click_index = 0
+    match = matches[click_index]
+    x, y = match["center_x"], match["center_y"]
+    return mouse_click(x, y, button=button, clicks=1)
 
