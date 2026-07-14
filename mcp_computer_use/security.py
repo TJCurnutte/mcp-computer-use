@@ -80,10 +80,18 @@ class SecurityPolicy:
         return False
 
     def requires_confirmation(self, command: str) -> bool:
-        """Check whether a command requires explicit user confirmation."""
-        cmd_lower = command.lower()
+        """Check whether a command requires explicit user confirmation.
+
+        Tokens are checked so that rm/kill in a quoted commit message do not
+        trigger false positives.
+        """
+        try:
+            tokens = shlex.split(command.lower())
+        except ValueError:
+            tokens = command.lower().split()
         for keyword in self.config.require_confirmation_for:
-            if keyword.lower() in cmd_lower:
+            kw = keyword.lower()
+            if kw in tokens:
                 return True
         return False
 

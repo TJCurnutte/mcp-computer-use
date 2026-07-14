@@ -41,11 +41,31 @@ async def main():
         payload = await call_tool(session, "screenshot", {"display": 0})
         print("screenshot meta:", {k: v for k, v in payload.items() if k != "image"})
 
+        region = await call_tool(session, "screenshot_region", {"left": 0, "top": 0, "width": 400, "height": 300})
+        print("screenshot_region meta:", {k: v for k, v in region.items() if k != "image"})
+
+        await call_tool(session, "list_windows", {})
+
         await call_tool(session, "run_shell_command", {"command": "pwd"})
         await call_tool(session, "clipboard_set", {"text": "mcp-computer-use test"})
         await call_tool(session, "clipboard_get", {})
 
-        # OCR: find a word likely visible on the desktop
+        await call_tool(session, "list_dir", {"path": "/Users/curnutte/CascadeProjects/mcp-computer-use"})
+        await call_tool(session, "write_file", {
+            "path": "/Users/curnutte/.mcp-computer-use/test.txt",
+            "content": "hello from mcp-computer-use",
+        })
+        await call_tool(session, "read_file", {"path": "/Users/curnutte/.mcp-computer-use/test.txt"})
+        result = await call_tool(session, "delete_file", {"path": "/Users/curnutte/.mcp-computer-use/test.txt"})
+        if result.get("requires_confirmation"):
+            await call_tool(session, "confirm_sensitive_action", {"pending_id": result["pending_id"]})
+
+        result = await call_tool(session, "process_start", {"command": "ping -c 30 127.0.0.1"})
+        pid = result.get("process_id")
+        await asyncio.sleep(0.3)
+        await call_tool(session, "process_read", {"process_id": pid, "timeout": 0.5, "max_lines": 10})
+        await call_tool(session, "process_kill", {"process_id": pid, "signal": "SIGTERM"})
+
         result = await call_tool(session, "find_text_on_screen", {"text": "mcp", "display": 0})
         print("OCR count:", result.get("count"))
 

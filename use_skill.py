@@ -1,4 +1,4 @@
-"""Use the MCP computer-use skill to commit the latest improvements."""
+"""Use the MCP computer-use skill to commit the latest test client updates."""
 
 import asyncio
 import json
@@ -32,7 +32,7 @@ async def main():
         cwd = "/Users/curnutte/CascadeProjects/mcp-computer-use"
         await call_tool(session, "run_shell_command", {"command": "git add -A", "cwd": cwd})
         await call_tool(session, "run_shell_command", {
-            "command": "git commit -m 'Add network tools and fix process_kill signal lookup'",
+            "command": "git commit -m 'Update test_client with comprehensive tool coverage'",
             "cwd": cwd,
         })
 
