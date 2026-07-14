@@ -7,6 +7,7 @@ final class DashboardController {
     weak var stateForwardDelegate: ServerManagerDelegate?
 
     private var currentState: ServerState = .idle
+    private var isTestingBridge = false
     private var window: NSWindowController?
     var nsWindow: NSWindow? { window?.window }
 
@@ -57,23 +58,42 @@ final class DashboardController {
     private func updateUI() {
         _ = viewController?.view
 
+        let statusText: String
+        let statusColor: NSColor
+        let startEnabled: Bool
+        let stopEnabled: Bool
+
         switch currentState {
         case .idle:
-            viewController?.updateStatus(text: "Idle", color: .secondaryLabelColor)
-            viewController?.setStartEnabled(true)
-            viewController?.setStopEnabled(false)
+            statusText = "Ready to start"
+            statusColor = DashboardTheme.statusIdle
+            startEnabled = true
+            stopEnabled = false
         case .starting:
-            viewController?.updateStatus(text: "Starting...", color: .systemYellow)
-            viewController?.setStartEnabled(false)
-            viewController?.setStopEnabled(true)
+            statusText = "Starting bridge, please wait..."
+            statusColor = DashboardTheme.statusStarting
+            startEnabled = false
+            stopEnabled = true
         case .running(let port):
-            viewController?.updateStatus(text: "Running on port \(port)", color: .systemGreen)
-            viewController?.setStartEnabled(false)
-            viewController?.setStopEnabled(true)
+            statusText = "Server running on port \(port)"
+            statusColor = DashboardTheme.statusRunning
+            startEnabled = false
+            stopEnabled = true
         case .error(let message):
-            viewController?.updateStatus(text: "Error: \(message)", color: .systemRed)
-            viewController?.setStartEnabled(true)
+            statusText = "Error: \(message)"
+            statusColor = DashboardTheme.statusError
+            startEnabled = true
+            stopEnabled = false
+        }
+
+        if isTestingBridge {
+            viewController?.updateStatus(text: "Testing bridge...", color: DashboardTheme.statusStarting)
+            viewController?.setStartEnabled(false)
             viewController?.setStopEnabled(false)
+        } else {
+            viewController?.updateStatus(text: statusText, color: statusColor)
+            viewController?.setStartEnabled(startEnabled)
+            viewController?.setStopEnabled(stopEnabled)
         }
     }
 
@@ -107,9 +127,14 @@ extension DashboardController: DashboardViewControllerDelegate {
     }
 
     func dashboardViewControllerDidSelectCheckPermissions() {
+        updatePermissionStatus("Checking permissions...")
+
         let access = permissionChecker.checkAccessibility()
         let screen = permissionChecker.checkScreenRecording()
-        updatePermissionStatus(accessibility: access, screenRecording: screen)
+
+        let accessLabel = access ? "✅ Accessibility OK" : "⚠️ Accessibility needed"
+        let screenLabel = screen ? "✅ Screen Recording OK" : "⚠️ Screen Recording needed"
+        updatePermissionStatus("\(accessLabel), \(screenLabel)")
     }
 
     func dashboardViewControllerDidSelectOpenLogs() {
@@ -121,13 +146,18 @@ extension DashboardController: DashboardViewControllerDelegate {
 
         guard FileManager.default.fileExists(atPath: Paths.portFile.path) else {
             viewController?.updateTestResult(text: "Cannot test: server is not running. Start the server first.")
+            updateUI()
             return
         }
 
         guard FileManager.default.fileExists(atPath: testBridgeURL.path) else {
             viewController?.updateTestResult(text: "Cannot test: test_bridge.py not found at \(testBridgeURL.path).")
+            updateUI()
             return
         }
+
+        isTestingBridge = true
+        updateUI()
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.runTestBridge()
@@ -138,13 +168,11 @@ extension DashboardController: DashboardViewControllerDelegate {
         let snippet = bridgeConfigSnippet()
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(snippet, forType: .string)
-        viewController?.updateTestResult(text: "Devin config snippet copied to pasteboard.")
+        viewController?.updateTestResult(text: "Bridge config copied to pasteboard.")
     }
 
-    private func updatePermissionStatus(accessibility: Bool, screenRecording: Bool) {
-        let accessText = accessibility ? "OK" : "Needed"
-        let screenText = screenRecording ? "OK" : "Needed"
-        viewController?.updatePermissionStatus(text: "Accessibility: \(accessText), Screen Recording: \(screenText)")
+    private func updatePermissionStatus(_ text: String) {
+        viewController?.updatePermissionStatus(text: text)
     }
 
     private func runTestBridge() {
@@ -162,7 +190,9 @@ extension DashboardController: DashboardViewControllerDelegate {
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             DispatchQueue.main.async {
+                self?.isTestingBridge = false
                 self?.viewController?.updateTestResult(text: output.isEmpty ? "No output" : output)
+                self?.updateUI()
             }
         }
 
@@ -170,7 +200,9 @@ extension DashboardController: DashboardViewControllerDelegate {
             try process.run()
         } catch {
             DispatchQueue.main.async { [weak self] in
+                self?.isTestingBridge = false
                 self?.viewController?.updateTestResult(text: "Failed to start test: \(error.localizedDescription)")
+                self?.updateUI()
             }
         }
     }
