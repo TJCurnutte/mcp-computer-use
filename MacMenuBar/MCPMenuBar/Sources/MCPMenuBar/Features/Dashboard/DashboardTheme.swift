@@ -6,25 +6,25 @@ import AppKit
 /// stays consistent across DashboardViewController, DashboardController, and DashboardWindow.
 enum DashboardTheme {
     // MARK: - Colors
-    static let backgroundColor: NSColor = NSColor.windowBackgroundColor.withAlphaComponent(0.55)
-    static let cardBackground: NSColor = NSColor.controlBackgroundColor.withAlphaComponent(0.52)
+    static let backgroundColor: NSColor = .clear
+    static let cardBackground: NSColor = NSColor.controlBackgroundColor.withAlphaComponent(0.82)
     static let primaryText: NSColor = .labelColor
     static let secondaryText: NSColor = .secondaryLabelColor
     static let accent: NSColor = .controlAccentColor
 
     static let statusIdle: NSColor = .secondaryLabelColor
-    static let statusStarting: NSColor = .systemOrange
+    static let statusStarting: NSColor = .systemYellow
     static let statusRunning: NSColor = .systemGreen
     static let statusError: NSColor = .systemRed
 
     // MARK: - Glass / Native refinements
-    static let cardBorder: NSColor = NSColor.separatorColor.withAlphaComponent(0.28)
-    static let cardShadow: NSColor = NSColor.black.withAlphaComponent(0.14)
-    static let glassTint: NSColor = NSColor.windowBackgroundColor.withAlphaComponent(0.28)
+    static let cardBorder: NSColor = NSColor.separatorColor.withAlphaComponent(0.45)
+    static let cardShadow: NSColor = NSColor.black.withAlphaComponent(0.12)
+    static let glassTint: NSColor = .clear
     static let accentHover: NSColor = NSColor.controlAccentColor.withAlphaComponent(0.85)
     static let buttonFill: NSColor = NSColor.controlBackgroundColor.withAlphaComponent(0.55)
     static let buttonBorder: NSColor = NSColor.separatorColor.withAlphaComponent(0.35)
-    static let headerDivider: NSColor = NSColor.separatorColor.withAlphaComponent(0.22)
+    static let headerDivider: NSColor = NSColor.separatorColor.withAlphaComponent(0.45)
 
     // MARK: - Typography
     static let fontTitle: NSFont = .systemFont(ofSize: 20, weight: .semibold)

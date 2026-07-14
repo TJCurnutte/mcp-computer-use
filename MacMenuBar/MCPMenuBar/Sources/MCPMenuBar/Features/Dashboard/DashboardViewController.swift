@@ -127,18 +127,11 @@ final class DashboardViewController: NSViewController {
         // Frosted glass backdrop that fills the full-size content view,
         // including under the transparent titlebar.
         let visualEffectView = NSVisualEffectView()
-        visualEffectView.material = .hudWindow
+        visualEffectView.material = .underWindowBackground
         visualEffectView.blendingMode = .behindWindow
-        visualEffectView.state = .followsWindowActiveState
-        visualEffectView.wantsLayer = true
+        visualEffectView.state = .active
         visualEffectView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(visualEffectView)
-
-        let glassTint = NSView()
-        glassTint.wantsLayer = true
-        glassTint.layer?.backgroundColor = DashboardTheme.glassTint.cgColor
-        glassTint.translatesAutoresizingMaskIntoConstraints = false
-        visualEffectView.addSubview(glassTint)
 
         // Titlebar-integrated header (sits under traffic lights).
         let header = makeHeader()
@@ -177,11 +170,6 @@ final class DashboardViewController: NSViewController {
             visualEffectView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             visualEffectView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             visualEffectView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            glassTint.topAnchor.constraint(equalTo: visualEffectView.topAnchor),
-            glassTint.leadingAnchor.constraint(equalTo: visualEffectView.leadingAnchor),
-            glassTint.trailingAnchor.constraint(equalTo: visualEffectView.trailingAnchor),
-            glassTint.bottomAnchor.constraint(equalTo: visualEffectView.bottomAnchor),
 
             header.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
             header.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: DashboardTheme.padding),

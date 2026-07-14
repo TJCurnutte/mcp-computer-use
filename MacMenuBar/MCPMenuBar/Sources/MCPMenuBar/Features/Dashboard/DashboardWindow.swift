@@ -30,13 +30,6 @@ final class DashboardWindow: NSWindowController {
         window.tabbingMode = .disallowed
         window.contentViewController = viewController
 
-        // Soft rounded chrome that matches the glass cards inside.
-        if let contentView = window.contentView {
-            contentView.wantsLayer = true
-            contentView.layer?.cornerRadius = 12
-            contentView.layer?.masksToBounds = true
-        }
-
         self.init(window: window)
         self.controller = controller
 
