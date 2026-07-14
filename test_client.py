@@ -9,6 +9,14 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 
+async def call_tool(session, name, args):
+    result = await session.call_tool(name, arguments=args)
+    text = result.content[0].text
+    print(f"\n[{name}] {json.dumps(args)}")
+    print(text[:1000])
+    return json.loads(text)
+
+
 async def main():
     server_params = StdioServerParameters(
         command=sys.executable,
@@ -25,32 +33,21 @@ async def main():
         print(f"Tools: {len(tools.tools)} tools")
         print([t.name for t in tools.tools])
 
-        # Non-invasive tests
-        for tool in ["get_display_info", "get_cursor_position", "wait"]:
-            args = {"duration": 0.2} if tool == "wait" else {}
-            result = await session.call_tool(tool, arguments=args)
-            print(f"\n{tool}:")
-            print(result.content[0].text[:500])
+        await call_tool(session, "get_status", {})
+        await call_tool(session, "get_display_info", {})
+        await call_tool(session, "get_cursor_position", {})
+        await call_tool(session, "wait", {"duration": 0.2})
 
-        # Screenshot
-        result = await session.call_tool("screenshot", arguments={"display": 0})
-        payload = json.loads(result.content[0].text)
-        print("\nscreenshot:", {k: v for k, v in payload.items() if k != "image"})
+        payload = await call_tool(session, "screenshot", {"display": 0})
+        print("screenshot meta:", {k: v for k, v in payload.items() if k != "image"})
 
-        # Shell command (safe)
-        result = await session.call_tool("run_shell_command", arguments={"command": "pwd"})
-        print("\nrun_shell_command pwd:")
-        print(result.content[0].text[:500])
+        await call_tool(session, "run_shell_command", {"command": "pwd"})
+        await call_tool(session, "clipboard_set", {"text": "mcp-computer-use test"})
+        await call_tool(session, "clipboard_get", {})
 
-        # Clipboard write/read
-        result = await session.call_tool("clipboard_set", arguments={"text": "mcp-computer-use test"})
-        print("\nclipboard_set:", result.content[0].text[:200])
-        result = await session.call_tool("clipboard_get", arguments={})
-        print("clipboard_get:", result.content[0].text[:200])
-
-        # Open app (Terminal) - may bring it forward
-        # result = await session.call_tool("open_app", arguments={"name": "Terminal"})
-        # print("\nopen_app:", result.content[0].text[:500])
+        # OCR: find a word likely visible on the desktop
+        result = await call_tool(session, "find_text_on_screen", {"text": "mcp", "display": 0})
+        print("OCR count:", result.get("count"))
 
 
 if __name__ == "__main__":

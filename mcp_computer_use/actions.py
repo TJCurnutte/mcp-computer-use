@@ -10,6 +10,7 @@ from typing import Optional
 
 import pyautogui
 from .config import CONFIG
+from .ocr import find_text, find_text_lines, ocr_image
 from .security import SECURITY
 from .utils import (
     capture,
@@ -284,4 +285,92 @@ BATCH_HANDLERS = {
     "wait": wait,
     "screenshot": take_screenshot,
     "clipboard_set": clipboard_set,
+    "run_shell_command": run_shell_command,
+    "open_app": open_app,
+    "clipboard_get": clipboard_get,
 }
+
+
+# ---------------------------------------------------------------------------
+# OCR
+# ---------------------------------------------------------------------------
+
+def ocr_screenshot(display: int = 0, scale: bool = True) -> dict:
+    """Capture a screenshot and return all text recognized by OCR."""
+    img, _ = capture(display)
+    if scale:
+        img = resize_for_model(img, CONFIG.max_screenshot_dim)
+    return {
+        "text": ocr_image(img),
+        "display": display,
+        "width": img.width,
+        "height": img.height,
+    }
+
+
+def find_text_on_screen(text: str, display: int = 0, scale: bool = True) -> dict:
+    """Capture a screenshot and return bounding boxes for the given text."""
+    try:
+        img, _ = capture(display)
+        if scale:
+            img = resize_for_model(img, CONFIG.max_screenshot_dim)
+        line_matches = find_text_lines(img, text)
+        word_matches = find_text(img, text)
+        return {
+            "query": text,
+            "display": display,
+            "width": img.width,
+            "height": img.height,
+            "line_matches": line_matches,
+            "word_matches": word_matches,
+            "count": len(word_matches),
+        }
+    except Exception as e:
+        logger.exception("OCR failed")
+        return {"error": str(e), "query": text}
+
+
+# ---------------------------------------------------------------------------
+# Status / permissions
+# ---------------------------------------------------------------------------
+
+def get_status() -> dict:
+    """Return server status and permission state."""
+    perms = {}
+    try:
+        import Quartz
+        # Screenshot permission is implicitly tested by a quick capture
+        try:
+            capture(0)
+            perms["screen_recording"] = True
+        except Exception as e:
+            perms["screen_recording"] = False
+            perms["screen_recording_error"] = str(e)
+    except Exception:
+        perms["screen_recording"] = False
+    perms["failsafe_enabled"] = pyautogui.FAILSAFE
+    perms["allowed_shell_commands"] = CONFIG.allowed_shell_commands
+    perms["blocked_shell_commands"] = CONFIG.blocked_shell_commands
+    return {
+        "status": "ok",
+        "version": "0.2.0",
+        "permissions": perms,
+        "config": {
+            "max_screenshot_dim": CONFIG.max_screenshot_dim,
+            "pause_between_actions": CONFIG.pause_between_actions,
+            "move_duration": CONFIG.move_duration,
+            "confirm_sensitive": CONFIG.confirm_sensitive,
+        },
+    }
+
+
+def stop() -> dict:
+    """Stop the MCP server process."""
+    import os
+    import threading
+    def _exit():
+        time.sleep(0.5)
+        os._exit(0)
+    threading.Thread(target=_exit, daemon=True).start()
+    return {"stopped": True}
+

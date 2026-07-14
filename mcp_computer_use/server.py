@@ -1,6 +1,7 @@
 """FastMCP server entry point."""
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -8,10 +9,20 @@ from mcp.server.fastmcp import FastMCP
 
 from . import actions as act
 from .config import CONFIG
+from .kill_switch import start_kill_switch
 from .utils import setup_logging
+
+# Tesseract on macOS can fail if TMPDIR is /tmp, so point it to a stable place.
+_tmp_dir = Path.home() / ".mcp-computer-use" / "tmp"
+_tmp_dir.mkdir(parents=True, exist_ok=True)
+for _var in ("TMPDIR", "TEMP", "TMP"):
+    os.environ[_var] = str(_tmp_dir)
 
 # Set up logging before anything else
 setup_logging(CONFIG.log_dir, CONFIG.log_level)
+
+# Arm the global emergency kill switch when Accessibility is granted.
+start_kill_switch()
 
 mcp = FastMCP("mcp-computer-use")
 
@@ -129,6 +140,30 @@ def batch_operations(operations: str) -> str:
     except json.JSONDecodeError as e:
         return json.dumps({"error": f"invalid JSON: {e}"})
     return json.dumps(act.batch(ops))
+
+
+@mcp.tool()
+def ocr_screenshot(display: int = 0) -> str:
+    """Capture a screenshot and return all text recognized by OCR."""
+    return json.dumps(act.ocr_screenshot(display))
+
+
+@mcp.tool()
+def find_text_on_screen(text: str, display: int = 0) -> str:
+    """Find the bounding boxes of the given text on the screen."""
+    return json.dumps(act.find_text_on_screen(text, display))
+
+
+@mcp.tool()
+def get_status() -> str:
+    """Return server status and current permission state."""
+    return json.dumps(act.get_status())
+
+
+@mcp.tool()
+def stop() -> str:
+    """Stop the MCP server process."""
+    return json.dumps(act.stop())
 
 
 def main():

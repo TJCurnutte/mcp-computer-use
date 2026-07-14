@@ -1,4 +1,4 @@
-"""Use the MCP computer-use skill to clean up the git repo after .venv was accidentally committed."""
+"""Use the MCP computer-use skill to manage the project git repo."""
 
 import asyncio
 import json
@@ -30,15 +30,10 @@ async def main():
         await session.initialize()
 
         cwd = "/Users/curnutte/CascadeProjects/mcp-computer-use"
-        # Remove accidentally tracked build artifacts from the index
-        await call_tool(session, "run_shell_command", {
-            "command": "git rm -r --cached --ignore-unmatch .venv __pycache__ mcp_computer_use/__pycache__ server.py.bak",
-            "cwd": cwd,
-        })
-        await call_tool(session, "run_shell_command", {"command": "git add .gitignore", "cwd": cwd})
+        await call_tool(session, "run_shell_command", {"command": "git status", "cwd": cwd})
         await call_tool(session, "run_shell_command", {"command": "git add -A", "cwd": cwd})
         await call_tool(session, "run_shell_command", {
-            "command": "git commit -m 'Add .gitignore and remove .venv/__pycache__ from tracked files'",
+            "command": "git commit -m 'Add OCR, status, stop, TMPDIR fix, package refactor and docs'",
             "cwd": cwd,
         })
 

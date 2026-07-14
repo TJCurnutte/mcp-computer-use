@@ -5,3 +5,6 @@ pyautogui>=0.9.54
 pyobjc>=10.0
 pyobjc-framework-Quartz>=10.0
 pyobjc-framework-Cocoa>=10.0
+pyobjc-framework-Vision>=10.0
+pytesseract>=0.3.10
+pynput>=1.7.6
