@@ -121,5 +121,9 @@ def scale_to_physical(x: int, y: int, scale: float) -> Tuple[int, int]:
     return int(x * scale), int(y * scale)
 
 
+def scale_to_logical(x: int, y: int, scale: float) -> Tuple[int, int]:
+    return int(x / scale), int(y / scale)
+
+
 def clamp(n: int, min_val: int, max_val: int) -> int:
     return max(min_val, min(n, max_val))

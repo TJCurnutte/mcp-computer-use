@@ -1,4 +1,4 @@
-"""Use the MCP computer-use skill to commit the BATCH_HANDLERS fix."""
+"""Use the MCP computer-use skill to commit the cursor coordinate fix."""
 
 import asyncio
 import json
@@ -32,7 +32,7 @@ async def main():
         cwd = "/Users/curnutte/CascadeProjects/mcp-computer-use"
         await call_tool(session, "run_shell_command", {"command": "git add -A", "cwd": cwd})
         await call_tool(session, "run_shell_command", {
-            "command": "git commit -m 'Update BATCH_HANDLERS to include all tools and fix NameError'",
+            "command": "git commit -m 'Fix get_cursor_position to return logical screenshot coordinates'",
             "cwd": cwd,
         })
 

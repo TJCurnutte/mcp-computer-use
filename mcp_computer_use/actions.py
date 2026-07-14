@@ -22,6 +22,7 @@ from .utils import (
     image_to_base64,
     list_displays,
     resize_for_model,
+    scale_to_logical,
     scale_to_physical,
 )
 
@@ -89,8 +90,10 @@ def screenshot_region(left: int, top: int, width: int, height: int, scale: bool 
 
 
 def get_cursor_position() -> dict:
-    x, y = pyautogui.position()
-    return {"x": x, "y": y}
+    px, py = pyautogui.position()
+    scale = click_scale_for_all_screens(CONFIG.max_screenshot_dim)
+    x, y = scale_to_logical(px, py, scale)
+    return {"x": x, "y": y, "physical_x": px, "physical_y": py, "click_scale": scale}
 
 
 # ---------------------------------------------------------------------------
