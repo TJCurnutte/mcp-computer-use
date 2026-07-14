@@ -447,20 +447,13 @@ def list_dir(path: str) -> dict:
         return {"error": str(e), "path": path}
 
 
-def delete_file(path: str) -> dict:
-    """Delete a file or directory under allowed directories."""
-    if not SECURITY.is_allowed_path(path):
-        return {"error": "path not in allowed directories", "path": path}
+def _delete_file_impl(path: str) -> dict:
+    """Perform the actual deletion without confirmation."""
     p = Path(path)
     if not p.exists():
         return {"error": "path does not exist", "path": path}
     if p.is_dir() and any(p.iterdir()):
         return {"error": "directory is not empty, use rm -r via shell", "path": path}
-    if CONFIG.confirm_sensitive:
-        pending_id = str(uuid.uuid4())
-        with PENDING_LOCK:
-            PENDING_ACTIONS[pending_id] = {"type": "delete_file", "path": path}
-        return {"requires_confirmation": True, "pending_id": pending_id, "path": path}
     try:
         if p.is_dir():
             p.rmdir()
@@ -471,17 +464,33 @@ def delete_file(path: str) -> dict:
         return {"error": str(e), "path": path}
 
 
+def delete_file(path: str) -> dict:
+    """Delete a file or directory under allowed directories."""
+    if not SECURITY.is_allowed_path(path):
+        return {"error": "path not in allowed directories", "path": path}
+    if CONFIG.confirm_sensitive:
+        p = Path(path)
+        if not p.exists():
+            return {"error": "path does not exist", "path": path}
+        if p.is_dir() and any(p.iterdir()):
+            return {"error": "directory is not empty, use rm -r via shell", "path": path}
+        pending_id = str(uuid.uuid4())
+        with PENDING_LOCK:
+            PENDING_ACTIONS[pending_id] = {"type": "delete_file", "path": path}
+        return {"requires_confirmation": True, "pending_id": pending_id, "path": path}
+    return _delete_file_impl(path)
+
+
 def confirm_sensitive_action(pending_id: str) -> dict:
     """Execute a previously queued sensitive action."""
-    # First check if it is a shell command
-    if PENDING_ACTIONS.get(pending_id, {}).get("type") == "shell":
-        return run_shell_command(pending_id=pending_id)
     with PENDING_LOCK:
         action = PENDING_ACTIONS.pop(pending_id, None)
     if not action:
         return {"error": "pending action not found", "pending_id": pending_id}
+    if action["type"] == "shell":
+        return _exec_shell_command(action["command"], action["timeout"], action["cwd"])
     if action["type"] == "delete_file":
-        return delete_file(action["path"])
+        return _delete_file_impl(action["path"])
     return {"error": "unsupported pending action type", "type": action.get("type")}
 
 
