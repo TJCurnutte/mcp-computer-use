@@ -9,7 +9,10 @@ enum WindowActivator {
     static func activateApp(policy: NSApplication.ActivationPolicy = .regular) -> Bool {
         let app = NSApplication.shared
         if app.activationPolicy() != policy {
-            _ = app.setActivationPolicy(policy)
+            let result = app.setActivationPolicy(policy)
+            if !result {
+                Logger.shared.log("Failed to set activation policy to \(policy)")
+            }
         }
         app.activate(ignoringOtherApps: true)
         return true
@@ -22,6 +25,7 @@ enum WindowActivator {
             window.center()
         }
         window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
     }
 
     /// Activates the app and brings the window to the front.

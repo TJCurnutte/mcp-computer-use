@@ -9,6 +9,7 @@ final class DashboardWindow: NSWindowController {
         window.title = "MCPMenuBar Dashboard"
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.minSize = NSSize(width: 480, height: 320)
+        window.isReleasedWhenClosed = false
         window.center()
 
         super.init(window: window)

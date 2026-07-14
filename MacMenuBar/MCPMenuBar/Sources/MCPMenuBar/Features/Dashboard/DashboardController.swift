@@ -33,7 +33,10 @@ final class DashboardController {
     }
 
     weak var viewController: DashboardViewController? {
-        didSet { updateUI() }
+        didSet {
+            _ = viewController?.view
+            updateUI()
+        }
     }
 
     init(serverManager: ServerManager, permissionChecker: PermissionChecker) {
@@ -52,6 +55,8 @@ final class DashboardController {
     }
 
     private func updateUI() {
+        _ = viewController?.view
+
         switch currentState {
         case .idle:
             viewController?.updateStatus(text: "Idle", color: .secondaryLabelColor)

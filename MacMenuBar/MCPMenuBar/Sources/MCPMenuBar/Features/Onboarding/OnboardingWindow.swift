@@ -29,6 +29,7 @@ final class OnboardingWindow: NSWindowController {
         window.contentViewController = pageViewController
         window.title = "MCPMenuBar Setup"
         window.minSize = NSSize(width: 600, height: 400)
+        window.isReleasedWhenClosed = false
 
         super.init(window: window)
         self.onboardingDelegate = delegate
