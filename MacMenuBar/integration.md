@@ -1,7 +1,7 @@
 # MCPMenuBar Integration Guide
 
-This directory wires the `MCPMenuBar` macOS menu-bar app (built by Agent 2) to
-stdio-only MCP clients such as the Devin CLI, Cursor, and Windsurf.
+This directory wires the `MCPMenuBar` macOS menu-bar app to stdio-only MCP
+clients such as the Devin CLI, Cursor, and Windsurf.
 
 At runtime:
 
@@ -10,6 +10,26 @@ At runtime:
 3. `bridge/mcp_bridge.py` reads that port, connects to `127.0.0.1:<port>`, and
    proxies newline-delimited JSON-RPC between stdio and the TCP socket.
 4. IDEs configure `mcp_bridge.py` as a normal stdio MCP server.
+
+---
+
+## App path & LaunchAgent
+
+`MCPMenuBar.app` should be installed at:
+
+```
+/Applications/MCPMenuBar.app
+```
+
+The LaunchAgent at `LaunchAgent/com.curnutte.mcp-computer-use.plist` uses this
+path and starts the app at login. Install it with:
+
+```bash
+cd /Users/curnutte/CascadeProjects/mcp-computer-use/MacMenuBar
+./scripts/install_launchagent.sh
+```
+
+The onboarding flow can also write the Devin/Windsurf/Cursor MCP config for you.
 
 ---
 
@@ -81,11 +101,23 @@ run:
 
 ```bash
 cd /Users/curnutte/CascadeProjects/mcp-computer-use/MacMenuBar
-python tests/test_bridge.py
+../.venv/bin/python tests/test_bridge.py
 ```
 
 Add `--screenshot` to also exercise the screenshot tool:
 
 ```bash
-python tests/test_bridge.py --screenshot
+../.venv/bin/python tests/test_bridge.py --screenshot
+```
+
+After onboarding, verify the onboarding marker and the full bridge flow:
+
+```bash
+../.venv/bin/python tests/test_onboarding.py
+```
+
+And verify Accessibility and Screen Recording permissions via the bridge:
+
+```bash
+../.venv/bin/python tests/test_permissions.py
 ```

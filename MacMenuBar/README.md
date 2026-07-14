@@ -1,7 +1,7 @@
 # MacMenuBar Integration
 
-This folder connects the `MCPMenuBar` macOS menu-bar app (built by Agent 2) to
-stdio-based MCP clients like the Devin CLI, Cursor, and Windsurf.
+This folder connects the `MCPMenuBar` macOS menu-bar app to stdio-based MCP
+clients like the Devin CLI, Cursor, and Windsurf.
 
 ## What lives here
 
@@ -11,9 +11,16 @@ stdio-based MCP clients like the Devin CLI, Cursor, and Windsurf.
   starts `MCPMenuBar` at user login.
 - `scripts/install_launchagent.sh` — copies the plist and loads it with
   `launchctl`.
-- `tests/test_bridge.py` — smoke test that checks the bridge can connect, send
-  an MCP `initialize`, call `get_status`, and optionally take a screenshot.
+- `tests/` — integration tests:
+  - `test_bridge.py` — smoke test that checks the bridge can connect, send
+    an MCP `initialize`, call `get_status`, and optionally take a screenshot.
+  - `test_onboarding.py` — checks the onboarding-complete marker and runs
+    `test_bridge.py`.
+  - `test_permissions.py` — verifies Accessibility and Screen Recording status
+    via the bridge.
+  - `QA.md` — manual QA checklist.
 - `integration.md` — exact config snippets for Devin CLI, Windsurf, and Cursor.
+- `USAGE.md` — user-facing walkthrough from download to first use.
 
 ## Build the menu-bar app
 
@@ -53,6 +60,20 @@ To start it immediately without logging out:
 launchctl start com.curnutte.mcp-computer-use
 ```
 
+## Onboarding & dashboard
+
+On first launch, `MCPMenuBar` opens an onboarding window that walks through:
+
+1. Moving the app to `/Applications` (if not already there).
+2. Granting **Accessibility**, **Screen Recording**, and **Input Monitoring**
+   permissions for the Python interpreter (`mcp-computer-use/.venv/bin/python`).
+3. Installing Devin / Windsurf / Cursor MCP config.
+4. Running a **Test Connection** that calls `get_status` and `screenshot`.
+
+After onboarding, the app lives in the menu bar and a dashboard window shows
+live status: start/stop server, current port, logs, permissions, and a quick
+bridge test. A global hotkey opens the dashboard.
+
 ## Configure your IDE / agent
 
 See `integration.md` for the exact JSON to add to:
@@ -70,16 +91,28 @@ With `MCPMenuBar` running (LaunchAgent or manually), run:
 
 ```bash
 cd /Users/curnutte/CascadeProjects/mcp-computer-use/MacMenuBar
-python tests/test_bridge.py
+../.venv/bin/python tests/test_bridge.py
 ```
 
 To also exercise the screenshot tool:
 
 ```bash
-python tests/test_bridge.py --screenshot
+../.venv/bin/python tests/test_bridge.py --screenshot
 ```
 
-If the test reports that `~/.mcp-computer-use/mcp.port` is missing, the
+After completing onboarding, verify the onboarding marker and run the bridge test:
+
+```bash
+../.venv/bin/python tests/test_onboarding.py
+```
+
+Verify Accessibility and Screen Recording permissions via the bridge:
+
+```bash
+../.venv/bin/python tests/test_permissions.py
+```
+
+If a test reports that `~/.mcp-computer-use/mcp.port` is missing, the
 menu-bar app is not running or has not written its port yet.
 
 ## How a Devin CLI client connects
