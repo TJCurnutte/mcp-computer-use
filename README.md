@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # mcp-computer-use
 
 Enterprise-grade macOS MCP server that gives your AI agent eyes, hands, and a terminal.
