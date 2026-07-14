@@ -1,4 +1,4 @@
-"""Use the MCP computer-use skill to commit README updates and inspect git history."""
+"""Use the MCP computer-use skill to commit the BATCH_HANDLERS fix."""
 
 import asyncio
 import json
@@ -13,7 +13,7 @@ async def call_tool(session, name, args):
     result = await session.call_tool(name, arguments=args)
     text = result.content[0].text
     print(f"\n[{name}] {json.dumps(args)}")
-    print(text[:1000])
+    print(text[:1500])
     return json.loads(text)
 
 
@@ -30,13 +30,11 @@ async def main():
         await session.initialize()
 
         cwd = "/Users/curnutte/CascadeProjects/mcp-computer-use"
-        await call_tool(session, "run_shell_command", {"command": "git status", "cwd": cwd})
         await call_tool(session, "run_shell_command", {"command": "git add -A", "cwd": cwd})
         await call_tool(session, "run_shell_command", {
-            "command": "git commit -m 'Update README permissions and kill switch note'",
+            "command": "git commit -m 'Update BATCH_HANDLERS to include all tools and fix NameError'",
             "cwd": cwd,
         })
-        await call_tool(session, "run_shell_command", {"command": "git log --oneline -10", "cwd": cwd})
 
 
 if __name__ == "__main__":

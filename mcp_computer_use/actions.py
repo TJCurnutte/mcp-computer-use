@@ -376,21 +376,6 @@ def batch(operations: list) -> dict:
     return {"results": results, "count": len(results)}
 
 
-BATCH_HANDLERS = {
-    "mouse_move": mouse_move,
-    "mouse_click": mouse_click,
-    "mouse_scroll": mouse_scroll,
-    "keyboard_type": keyboard_type,
-    "key": key,
-    "wait": wait,
-    "screenshot": take_screenshot,
-    "clipboard_set": clipboard_set,
-    "run_shell_command": run_shell_command,
-    "open_app": open_app,
-    "clipboard_get": clipboard_get,
-}
-
-
 # ---------------------------------------------------------------------------
 # OCR
 # ---------------------------------------------------------------------------
@@ -587,4 +572,38 @@ def click_text(text: str, display: int = 0, button: str = "left", click_index: i
     match = matches[click_index]
     x, y = match["center_x"], match["center_y"]
     return mouse_click(x, y, button=button, clicks=1)
+
+
+BATCH_HANDLERS = {
+    "mouse_move": mouse_move,
+    "mouse_click": mouse_click,
+    "mouse_scroll": mouse_scroll,
+    "keyboard_type": keyboard_type,
+    "key": key,
+    "hold_key": hold_key,
+    "wait": wait,
+    "screenshot": take_screenshot,
+    "screenshot_region": screenshot_region,
+    "get_cursor_position": get_cursor_position,
+    "get_display_info": get_display_info,
+    "clipboard_set": clipboard_set,
+    "clipboard_get": clipboard_get,
+    "run_shell_command": run_shell_command,
+    "process_start": process_start,
+    "process_read": process_read,
+    "process_kill": process_kill,
+    "open_app": open_app,
+    "list_windows": list_windows,
+    "focus_window": focus_window,
+    "ocr_screenshot": ocr_screenshot,
+    "find_text_on_screen": find_text_on_screen,
+    "click_text": click_text,
+    "get_status": get_status,
+    "stop": stop,
+    "read_file": read_file,
+    "write_file": write_file,
+    "list_dir": list_dir,
+    "delete_file": delete_file,
+    "confirm_sensitive_action": confirm_sensitive_action,
+}
 
