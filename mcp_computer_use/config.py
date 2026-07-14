@@ -1,0 +1,65 @@
+import json
+import os
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import List
+
+
+@dataclass
+class Config:
+    """Runtime configuration loaded from environment variables and config file."""
+
+    max_screenshot_dim: int = 1280
+    screenshot_format: str = "PNG"
+    jpeg_quality: int = 80
+    pause_between_actions: float = 0.1
+    move_duration: float = 0.2
+    fail_safe: bool = True
+    log_level: str = "INFO"
+    log_dir: Path = field(default_factory=lambda: Path.home() / ".mcp-computer-use" / "logs")
+
+    # Security
+    allowed_shell_commands: List[str] = field(default_factory=lambda: ["git", "python", "python3", "node", "npm", "ls", "pwd", "cat", "echo", "which"])
+    blocked_shell_commands: List[str] = field(default_factory=lambda: ["rm -rf", "sudo", "mkfs", "dd", ">/dev/null", "shutdown", "reboot", "poweroff"])
+    require_confirmation_for: List[str] = field(default_factory=lambda: ["delete", "overwrite", "sudo", "kill", "system", "rm -rf"])
+    allowed_directories: List[str] = field(default_factory=lambda: [str(Path.home())])
+
+    # Confirmation mode
+    confirm_sensitive: bool = True
+
+    @classmethod
+    def load(cls, config_path: Path = None) -> "Config":
+        config = cls()
+
+        # Environment variables
+        config.max_screenshot_dim = int(os.getenv("MCP_MAX_SCREENSHOT_DIM", config.max_screenshot_dim))
+        config.pause_between_actions = float(os.getenv("MCP_PAUSE", config.pause_between_actions))
+        config.move_duration = float(os.getenv("MCP_MOVE_DURATION", config.move_duration))
+        config.log_level = os.getenv("MCP_LOG_LEVEL", config.log_level)
+
+        env_allow = os.getenv("MCP_ALLOWED_SHELL_COMMANDS")
+        if env_allow:
+            config.allowed_shell_commands = [s.strip() for s in env_allow.split(",") if s.strip()]
+
+        env_block = os.getenv("MCP_BLOCKED_SHELL_COMMANDS")
+        if env_block:
+            config.blocked_shell_commands = [s.strip() for s in env_block.split(",") if s.strip()]
+
+        # Config file
+        path = config_path or Path.home() / ".mcp-computer-use" / "config.json"
+        if path.exists():
+            try:
+                data = json.loads(path.read_text())
+                for k, v in data.items():
+                    if hasattr(config, k):
+                        setattr(config, k, v)
+            except Exception as e:
+                print(f"Warning: failed to load config {path}: {e}", file=sys.stderr)
+
+        config.log_dir.mkdir(parents=True, exist_ok=True)
+        return config
+
+
+# Singleton config instance
+CONFIG = Config.load()

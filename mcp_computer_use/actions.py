@@ -1,0 +1,287 @@
+"""Concrete actions for the computer-use server."""
+
+import json
+import os
+import shutil
+import subprocess
+import time
+from pathlib import Path
+from typing import Optional
+
+import pyautogui
+from .config import CONFIG
+from .security import SECURITY
+from .utils import (
+    capture,
+    click_scale_for_all_screens,
+    get_logger,
+    image_to_base64,
+    list_displays,
+    resize_for_model,
+    scale_to_physical,
+)
+
+logger = get_logger("mcp-computer-use.actions")
+
+pyautogui.FAILSAFE = CONFIG.fail_safe
+
+
+# ---------------------------------------------------------------------------
+# Screenshot / display
+# ---------------------------------------------------------------------------
+
+def get_display_info() -> dict:
+    return {
+        "displays": list_displays(),
+        "scale_factor": _get_scale_factor(),
+    }
+
+
+def _get_scale_factor() -> float:
+    try:
+        import Quartz
+        main_id = Quartz.CGMainDisplayID()
+        bounds = Quartz.CGDisplayBounds(main_id)
+        pixel_width = Quartz.CGDisplayPixelsWide(main_id)
+        return pixel_width / bounds.size.width
+    except Exception:
+        return 1.0
+
+
+def take_screenshot(display: int = 0, scale: bool = True) -> dict:
+    img, monitor = capture(display)
+    original_width, original_height = img.width, img.height
+    if scale:
+        img = resize_for_model(img, CONFIG.max_screenshot_dim)
+    b64 = image_to_base64(img, CONFIG.screenshot_format, CONFIG.jpeg_quality)
+    return {
+        "width": img.width,
+        "height": img.height,
+        "original_width": original_width,
+        "original_height": original_height,
+        "display": display,
+        "scale_factor": _get_scale_factor(),
+        "click_scale": click_scale_for_all_screens(CONFIG.max_screenshot_dim) if scale else 1.0,
+        "image": f"data:image/png;base64,{b64}",
+    }
+
+
+def get_cursor_position() -> dict:
+    x, y = pyautogui.position()
+    return {"x": x, "y": y}
+
+
+# ---------------------------------------------------------------------------
+# Mouse / keyboard
+# ---------------------------------------------------------------------------
+
+def _physical_point(x: int, y: int) -> tuple:
+    scale = click_scale_for_all_screens(CONFIG.max_screenshot_dim)
+    return scale_to_physical(x, y, scale)
+
+
+def mouse_move(x: int, y: int, duration: Optional[float] = None) -> dict:
+    dur = duration if duration is not None else CONFIG.move_duration
+    px, py = _physical_point(x, y)
+    pyautogui.moveTo(px, py, duration=dur)
+    return {"x": px, "y": py}
+
+
+def mouse_click(x: int, y: int, button: str = "left", clicks: int = 1) -> dict:
+    px, py = _physical_point(x, y)
+    pyautogui.click(px, py, button=button, clicks=clicks, duration=0.1)
+    return {"clicked": True, "x": px, "y": py, "button": button, "clicks": clicks}
+
+
+def mouse_scroll(x: int, y: int, scroll_x: int = 0, scroll_y: int = 0) -> dict:
+    px, py = _physical_point(x, y)
+    pyautogui.moveTo(px, py)
+    if scroll_x:
+        pyautogui.hscroll(scroll_x)
+    if scroll_y:
+        pyautogui.scroll(scroll_y)
+    return {"scrolled": True, "x": px, "y": py, "scroll_x": scroll_x, "scroll_y": scroll_y}
+
+
+def keyboard_type(text: str) -> dict:
+    pyautogui.typewrite(text, interval=0.01)
+    return {"typed": text}
+
+
+def key(keys: str) -> dict:
+    parts = [p.strip() for p in keys.split("+")]
+    if len(parts) > 1:
+        pyautogui.keyDown(*parts[:-1])
+        pyautogui.keyDown(parts[-1])
+        pyautogui.keyUp(parts[-1])
+        pyautogui.keyUp(*parts[:-1])
+    else:
+        pyautogui.keyDown(parts[0])
+        pyautogui.keyUp(parts[0])
+    return {"key": keys}
+
+
+def hold_key(key: str, duration: float = 1.0) -> dict:
+    pyautogui.keyDown(key)
+    time.sleep(duration)
+    pyautogui.keyUp(key)
+    return {"held": key, "duration": duration}
+
+
+def wait(duration: float = 1.0) -> dict:
+    time.sleep(duration)
+    return {"waited": duration}
+
+
+# ---------------------------------------------------------------------------
+# Terminal / shell
+# ---------------------------------------------------------------------------
+
+def run_shell_command(command: str, timeout: int = 60, cwd: Optional[str] = None) -> dict:
+    error = SECURITY.validate_shell_command(command)
+    if error:
+        return {"error": error, "command": command}
+
+    if CONFIG.confirm_sensitive and SECURITY.requires_confirmation(command):
+        # In a real interactive flow we would ask the user. For this server
+        # we return an explicit request and rely on the agent to confirm.
+        return {
+            "requires_confirmation": True,
+            "command": command,
+            "message": "This command matches a sensitive pattern. Use the confirm_sensitive_action tool to approve.",
+        }
+
+    try:
+        logger.info(f"Running shell command: {command}")
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=cwd,
+        )
+        return {
+            "command": command,
+            "returncode": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+        }
+    except subprocess.TimeoutExpired:
+        return {"error": "command timed out", "command": command}
+    except Exception as e:
+        return {"error": str(e), "command": command}
+
+
+# ---------------------------------------------------------------------------
+# Clipboard
+# ---------------------------------------------------------------------------
+
+def clipboard_get() -> dict:
+    try:
+        process = subprocess.run(["pbpaste"], capture_output=True, text=True)
+        return {"text": process.stdout, "returncode": process.returncode}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def clipboard_set(text: str) -> dict:
+    try:
+        process = subprocess.run(["pbcopy"], input=text, text=True, capture_output=True)
+        return {"set": True, "returncode": process.returncode}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ---------------------------------------------------------------------------
+# Application / window management via AppleScript
+# ---------------------------------------------------------------------------
+
+def open_app(name: str) -> dict:
+    script = f'tell application "{name}" to activate'
+    return _run_applescript(script)
+
+
+def list_windows() -> dict:
+    script = '''
+    tell application "System Events"
+        set windowList to {}
+        repeat with p in (get processes whose background only is false)
+            try
+                set appName to name of p
+                repeat with w in windows of p
+                    set wName to name of w
+                    set wPos to position of w
+                    set wSize to size of w
+                    set end of windowList to {appName, wName, item 1 of wPos, item 2 of wPos, item 1 of wSize, item 2 of wSize}
+                end repeat
+            end try
+        end repeat
+    end tell
+    return windowList
+    '''
+    return _run_applescript(script)
+
+
+def focus_window(app_name: str, window_name: Optional[str] = None) -> dict:
+    if window_name:
+        script = f'''
+        tell application "System Events"
+            tell process "{app_name}"
+                set frontmost to true
+                set w to first window whose name contains "{window_name}"
+                set value of attribute "AXMain" of w to true
+                set value of attribute "AXFocused" of w to true
+            end tell
+        end tell
+        '''
+    else:
+        script = f'tell application "{app_name}" to activate'
+    return _run_applescript(script)
+
+
+def _run_applescript(script: str) -> dict:
+    try:
+        result = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
+        return {
+            "script": script,
+            "returncode": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ---------------------------------------------------------------------------
+# Batch / compound
+# ---------------------------------------------------------------------------
+
+def batch(operations: list) -> dict:
+    """Run a list of simple operations sequentially. Each operation is a dict
+    with keys: action, and the corresponding tool arguments."""
+    results = []
+    for op in operations:
+        try:
+            action = op.pop("action")
+            handler = BATCH_HANDLERS.get(action)
+            if handler:
+                results.append(handler(**op))
+            else:
+                results.append({"error": f"unknown action {action}"})
+        except Exception as e:
+            results.append({"error": str(e)})
+        time.sleep(CONFIG.pause_between_actions)
+    return {"results": results, "count": len(results)}
+
+
+BATCH_HANDLERS = {
+    "mouse_move": mouse_move,
+    "mouse_click": mouse_click,
+    "mouse_scroll": mouse_scroll,
+    "keyboard_type": keyboard_type,
+    "key": key,
+    "wait": wait,
+    "screenshot": take_screenshot,
+    "clipboard_set": clipboard_set,
+}
