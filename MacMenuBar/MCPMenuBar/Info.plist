@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.curnutte.mcp-computer-use.menubar</string>
+
+    <key>CFBundleName</key>
+    <string>MCPMenuBar</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>MCPMenuBar</string>
+
+    <key>CFBundleExecutable</key>
+    <string>MCPMenuBar</string>
+
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <key>CFBundleSignature</key>
+    <string>????</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+
+    <key>LSUIElement</key>
+    <true/>
+
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2025 curnutte. MIT License.</string>
+
+    <key>NSAccessibilityUsageDescription</key>
+    <string>MCPMenuBar hosts a Python helper that controls the mouse and keyboard on behalf of your coding assistant.</string>
+
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>MCPMenuBar hosts a Python helper that captures screenshots and reads window information for your coding assistant.</string>
+
+    <key>NSAppleEventsUsageDescription</key>
+    <string>MCPMenuBar may need to open or activate other applications via AppleScript.</string>
+
+    <key>NSHighResolutionCapable</key>
+    <true/>
+
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.utilities</string>
+</dict>
+</plist>

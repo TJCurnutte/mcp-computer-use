@@ -111,6 +111,21 @@ Create `~/.mcp-computer-use/config.json` to override defaults:
 
 The server arms a global `Ctrl+Alt+Q` hotkey via `pynput` when supported. If it cannot be armed, the server still runs and the process can be killed by the user or an agent calling the `stop` tool.
 
+## Menu-bar app (experimental)
+
+A native macOS menu-bar wrapper lives in `MacMenuBar/`. It keeps `mcp-computer-use`
+running in the top-right status bar, so the server works from any IDE or CLI:
+
+```bash
+cd MacMenuBar/MCPMenuBar
+./build_app.sh
+./install.sh
+```
+
+Then load the LaunchAgent and point your IDE MCP config at
+`MacMenuBar/bridge/mcp_bridge.py`. See `MacMenuBar/README.md` and
+`MacMenuBar/integration.md` for full details.
+
 ## License
 
 MIT

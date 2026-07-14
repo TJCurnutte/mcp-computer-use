@@ -25,3 +25,8 @@ logs/
 # IDE
 .vscode/
 .idea/
+
+# Swift build artifacts
+.build/
+build/
+*.app
