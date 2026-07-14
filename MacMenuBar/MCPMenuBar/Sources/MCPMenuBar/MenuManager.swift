@@ -119,22 +119,32 @@ final class MenuManager: NSObject {
         guard let button = statusItem.button else { return }
 
         let image = NSImage(systemSymbolName: "cursorarrow.rays", accessibilityDescription: "MCP Menu Bar")
-        let color: NSColor
+        let lightColor: NSColor
         switch state {
-        case .idle: color = .systemGray
-        case .starting: color = .systemYellow
-        case .running: color = .systemGreen
-        case .error: color = .systemRed
+        case .idle: lightColor = .secondaryLabelColor
+        case .starting: lightColor = .systemYellow
+        case .running: lightColor = .systemGreen
+        case .error: lightColor = .systemRed
         }
+        let color = dynamicColor(light: lightColor, dark: .white)
 
         if let image = image {
-            image.isTemplate = false
+            image.isTemplate = true
             button.image = image
             button.contentTintColor = color
         } else {
             button.title = "MCP"
             button.contentTintColor = color
         }
+    }
+
+    private func dynamicColor(light: NSColor, dark: NSColor) -> NSColor {
+        NSColor(name: nil, dynamicProvider: { appearance in
+            if appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua {
+                return dark
+            }
+            return light
+        })
     }
 
     @objc private func showDashboard() {
