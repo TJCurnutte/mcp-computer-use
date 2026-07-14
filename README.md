@@ -52,8 +52,13 @@ pip install -r requirements.txt
 
 ## Permissions
 
-Grant your terminal/IDE **Accessibility** and **Screen Recording** access in:
-`System Settings → Privacy & Security`.
+Grant your terminal/IDE the following permissions in `System Settings → Privacy & Security`:
+
+- **Screen Recording** — needed for screenshots, OCR, and Quartz window listing.
+- **Accessibility** — needed for mouse/keyboard control and window focus.
+- **Input Monitoring** — needed for the `Ctrl+Alt+Q` global kill switch (pynput will warn until this is granted).
+
+If the pynput warning "This process is not trusted! Input event monitoring will not be possible..." appears, the kill switch is armed but cannot receive hotkeys until the host process is added to `Input Monitoring`.
 
 ## Test
 
