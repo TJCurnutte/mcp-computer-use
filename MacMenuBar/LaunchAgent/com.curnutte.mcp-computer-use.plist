@@ -6,12 +6,12 @@
     <string>com.curnutte.mcp-computer-use</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Applications/MCPMenuBar.app/Contents/MacOS/MCPMenuBar</string>
+        <string>__APP_PATH__/Contents/MacOS/MCPMenuBar</string>
     </array>
     <key>EnvironmentVariables</key>
     <dict>
         <key>MCP_SERVER_ROOT</key>
-        <string>__HOME__/CascadeProjects/mcp-computer-use</string>
+        <string>__MCP_SERVER_ROOT__</string>
     </dict>
     <key>RunAtLoad</key>
     <true/>

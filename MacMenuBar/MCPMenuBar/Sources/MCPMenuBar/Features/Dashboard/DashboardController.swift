@@ -13,12 +13,7 @@ final class DashboardController {
     var nsWindow: NSWindow? { window?.window }
 
     private var repoURL: URL {
-        if let envPath = ProcessInfo.processInfo.environment["MCP_SERVER_ROOT"],
-           !envPath.isEmpty,
-           FileManager.default.fileExists(atPath: envPath) {
-            return URL(fileURLWithPath: envPath)
-        }
-        return URL(fileURLWithPath: "/Users/curnutte/CascadeProjects/mcp-computer-use")
+        Paths.repoRoot
     }
 
     private var pythonURL: URL {

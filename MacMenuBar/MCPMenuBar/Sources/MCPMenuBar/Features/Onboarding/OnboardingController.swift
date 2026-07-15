@@ -15,7 +15,7 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
 
     init(window: OnboardingWindow? = nil, repoRoot: URL? = nil, bridgeURL: URL? = nil, permissionsManager: PermissionsManager = PermissionsManager()) {
         self.window = window ?? OnboardingWindow()
-        self.repoRoot = repoRoot ?? Self.defaultRepoRoot()
+        self.repoRoot = repoRoot ?? Paths.repoRoot
         self.bridgeURL = bridgeURL ?? self.repoRoot.appendingPathComponent("MacMenuBar/bridge/mcp_bridge.py")
         self.permissionsManager = permissionsManager
     }
@@ -102,14 +102,6 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.state = newState
         }
-    }
-
-    private static func defaultRepoRoot() -> URL {
-        if let envPath = ProcessInfo.processInfo.environment["MCP_SERVER_ROOT"],
-           FileManager.default.fileExists(atPath: envPath) {
-            return URL(fileURLWithPath: envPath)
-        }
-        return URL(fileURLWithPath: "/Users/curnutte/CascadeProjects/mcp-computer-use")
     }
 
     // MARK: - /Applications check

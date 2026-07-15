@@ -185,14 +185,7 @@ final class BridgeConnection: NSObject {
     // MARK: Process
 
     private func spawnProcess() {
-        let repoURL: URL
-        if let envPath = ProcessInfo.processInfo.environment["MCP_SERVER_ROOT"],
-           !envPath.isEmpty,
-           FileManager.default.fileExists(atPath: envPath) {
-            repoURL = URL(fileURLWithPath: envPath)
-        } else {
-            repoURL = URL(fileURLWithPath: "/Users/curnutte/CascadeProjects/mcp-computer-use")
-        }
+        let repoURL = Paths.repoRoot
 
         let venvPython = repoURL.appendingPathComponent(".venv/bin/python")
         let pythonURL = FileManager.default.fileExists(atPath: venvPython.path) ? venvPython : URL(fileURLWithPath: "/usr/bin/python3")

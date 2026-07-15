@@ -173,29 +173,16 @@ final class PermissionsManager: ObservableObject {
 
     /// The Python interpreter that actually runs the mcp-computer-use server.
     private func pythonExecutableURL() -> URL {
-        if let envPath = ProcessInfo.processInfo.environment["MCP_SERVER_ROOT"],
-           !envPath.isEmpty,
-           FileManager.default.fileExists(atPath: envPath) {
-            let venv = URL(fileURLWithPath: envPath).appendingPathComponent(".venv/bin/python")
-            if FileManager.default.fileExists(atPath: venv.path) {
-                return venv
-            }
-        }
-        let defaultVenv = URL(fileURLWithPath: "/Users/curnutte/CascadeProjects/mcp-computer-use")
-            .appendingPathComponent(".venv/bin/python")
-        if FileManager.default.fileExists(atPath: defaultVenv.path) {
-            return defaultVenv
+        let repo = Paths.repoRoot
+        let venv = repo.appendingPathComponent(".venv/bin/python")
+        if FileManager.default.fileExists(atPath: venv.path) {
+            return venv
         }
         return URL(fileURLWithPath: "/usr/bin/python3")
     }
 
     private func repoURL() -> URL {
-        if let envPath = ProcessInfo.processInfo.environment["MCP_SERVER_ROOT"],
-           !envPath.isEmpty,
-           FileManager.default.fileExists(atPath: envPath) {
-            return URL(fileURLWithPath: envPath)
-        }
-        return URL(fileURLWithPath: "/Users/curnutte/CascadeProjects/mcp-computer-use")
+        Paths.repoRoot
     }
 
     private func runPythonPermissionProbe() -> (accessibility: Bool, screenRecording: Bool) {

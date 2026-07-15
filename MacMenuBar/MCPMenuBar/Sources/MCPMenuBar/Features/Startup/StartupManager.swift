@@ -162,14 +162,22 @@ final class StartupManager: NSObject, ObservableObject {
 
     private func writeLaunchAgentPlist() -> Bool {
         let home = Paths.home.path
+        let appPath = Bundle.main.bundlePath
+        let repoRoot = Paths.repoRoot.path
         let content: String
 
+        let template: String
         if let source = locateSourcePlist(),
            let sourceContent = try? String(contentsOf: source, encoding: .utf8) {
-            content = sourceContent.replacingOccurrences(of: "__HOME__", with: home)
+            template = sourceContent
         } else {
-            content = launchAgentTemplate.replacingOccurrences(of: "__HOME__", with: home)
+            template = launchAgentTemplate
         }
+
+        content = template
+            .replacingOccurrences(of: "__HOME__", with: home)
+            .replacingOccurrences(of: "__APP_PATH__", with: appPath)
+            .replacingOccurrences(of: "__MCP_SERVER_ROOT__", with: repoRoot)
 
         do {
             try content.write(to: launchAgentDestination, atomically: true, encoding: .utf8)
@@ -215,12 +223,12 @@ final class StartupManager: NSObject, ObservableObject {
     <string>com.curnutte.mcp-computer-use</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Applications/MCPMenuBar.app/Contents/MacOS/MCPMenuBar</string>
+        <string>__APP_PATH__/Contents/MacOS/MCPMenuBar</string>
     </array>
     <key>EnvironmentVariables</key>
     <dict>
         <key>MCP_SERVER_ROOT</key>
-        <string>__HOME__/CascadeProjects/mcp-computer-use</string>
+        <string>__MCP_SERVER_ROOT__</string>
     </dict>
     <key>RunAtLoad</key>
     <true/>
