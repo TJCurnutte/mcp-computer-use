@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCPMenuBar — AI control for your Mac, in the menu bar</title>
+  <meta name="description" content="MCPMenuBar is a macOS menu bar app that wraps an MCP server so Claude, Cursor, Windsurf, and other agents can control your Mac.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-12px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .glass {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #a855f7 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-glow {
+      background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.15), transparent 60%);
+    }
+    .code {
+      font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased">
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 hero-glow"></div>
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand-500/10 rounded-full blur-[120px]"></div>
+  </div>
+
+  <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/5 glass">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-violet-500 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="12" rx="2" />
+            <path d="M8 20h8M12 16v4" />
+          </svg>
+        </div>
+        <span class="font-bold text-lg tracking-tight">MCPMenuBar</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#install" class="hover:text-white transition">Install</a>
+        <a href="#setup" class="hover:text-white transition">Setup</a>
+        <a href="https://github.com/TJCurnutte/mcp-computer-use" target="_blank" class="hover:text-white transition">GitHub</a>
+      </div>
+      <a href="https://github.com/TJCurnutte/mcp-computer-use" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23a11.5 11.5 0 0 1 3-.405c1.02.015 2.04.135 3 .405 2.28-1.56 3.285-1.23 3.285-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12Z"/></svg>
+        Star on GitHub
+      </a>
+    </div>
+  </nav>
+
+  <header class="pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-300 text-sm font-medium mb-8">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-400"></span>
+        </span>
+        MCP server for macOS
+      </div>
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+        AI control for your Mac, <br class="hidden md:block" />
+        <span class="gradient-text">from the menu bar.</span>
+      </h1>
+      <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10">
+        MCPMenuBar is a native macOS menu bar app that exposes your desktop to Claude, Cursor, Windsurf, and any MCP-compatible client.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#install" class="px-8 py-4 rounded-xl bg-brand-500 hover:bg-brand-400 text-white font-semibold transition shadow-lg shadow-brand-500/25">
+          Get MCPMenuBar
+        </a>
+        <a href="https://github.com/TJCurnutte/mcp-computer-use" target="_blank" class="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold transition">
+          View on GitHub
+        </a>
+      </div>
+
+      <div class="mt-16 relative mx-auto max-w-3xl">
+        <div class="absolute -inset-1 bg-gradient-to-r from-brand-500 to-violet-500 rounded-2xl blur opacity-20"></div>
+        <div class="relative rounded-xl bg-slate-900/80 border border-white/10 overflow-hidden shadow-2xl">
+          <div class="h-8 bg-slate-950/50 flex items-center px-4 gap-2 border-b border-white/5">
+            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+            <div class="ml-auto text-xs text-slate-500">MCPMenuBar</div>
+          </div>
+          <div class="p-6 text-left">
+            <div class="text-slate-500 text-xs mb-1">Claude</div>
+            <div class="text-slate-300 mb-3">Take a screenshot, then open Safari and search for "MCPMenuBar".</div>
+            <div class="text-slate-500 text-xs mb-1">MCPMenuBar</div>
+            <div class="code text-sm text-emerald-400 mb-2">> screenshot: 2056x1329 PNG</div>
+            <div class="code text-sm text-emerald-400 mb-2">> open_app("Safari")</div>
+            <div class="code text-sm text-emerald-400 mb-2">> focus_window("Safari")</div>
+            <div class="code text-sm text-emerald-400">> keyboard_type("MCPMenuBar") + key("return")</div>
+            <div class="mt-4 flex items-center gap-2">
+              <span class="px-2 py-1 rounded bg-slate-800 text-xs text-slate-400">31 tools</span>
+              <span class="px-2 py-1 rounded bg-slate-800 text-xs text-slate-400">stdio / TCP</span>
+              <span class="px-2 py-1 rounded bg-slate-800 text-xs text-slate-400">macOS 13+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="features" class="py-20 px-6 border-t border-white/5">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Everything an agent can touch</h2>
+        <p class="text-slate-400 max-w-2xl mx-auto">A secure, allow-listed tool surface that turns natural language into desktop actions.</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="p-6 rounded-2xl bg-slate-900/50 border border-white/5 hover:border-brand-500/30 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 7h18"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Screenshots &amp; OCR</h3>
+          <p class="text-slate-400 text-sm">Capture the full screen, a region, or a window. Extract text on screen so agents can see and click.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-slate-900/50 border border-white/5 hover:border-brand-500/30 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Mouse &amp; Keyboard</h3>
+          <p class="text-slate-400 text-sm">Move, click, scroll, drag, type, press hotkeys, and hold modifier keys with pyautogui-level precision.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-slate-900/50 border border-white/5 hover:border-brand-500/30 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Shell &amp; Processes</h3>
+          <p class="text-slate-400 text-sm">Run safe shell commands, start long-lived processes, and stream stdout/stderr back to the agent.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-slate-900/50 border border-white/5 hover:border-brand-500/30 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Files &amp; Clipboard</h3>
+          <p class="text-slate-400 text-sm">Read, write, list, and delete files in allowed directories. Get and set the clipboard.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-slate-900/50 border border-white/5 hover:border-brand-500/30 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Windows &amp; Apps</h3>
+          <p class="text-slate-400 text-sm">List windows, open apps, focus a window, and click UI text using OCR coordinates.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-slate-900/50 border border-white/5 hover:border-brand-500/30 transition">
+          <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Safety First</h3>
+          <p class="text-slate-400 text-sm">Allow-listed shell commands, blocklists, confirmation prompts for destructive ops, and path sandboxing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install" class="py-20 px-6 border-t border-white/5">
+    <div class="max-w-5xl mx-auto">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-bold mb-4">Install in seconds</h2>
+          <p class="text-slate-400 mb-8">MCPMenuBar runs natively on macOS and shows a simple icon in your menu bar. No electron, no browser tabs.</p>
+          <ol class="space-y-6">
+            <li class="flex gap-4">
+              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 font-semibold">1</div>
+              <div>
+                <h4 class="font-semibold">Build or download the .app</h4>
+                <p class="text-slate-400 text-sm">Clone the repo and run <code class="bg-slate-800 px-1.5 py-0.5 rounded text-xs">MacMenuBar/MCPMenuBar/build_app.sh</code>, or grab a release from GitHub.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 font-semibold">2</div>
+              <div>
+                <h4 class="font-semibold">Move to /Applications</h4>
+                <p class="text-slate-400 text-sm">Drag <code class="bg-slate-800 px-1.5 py-0.5 rounded text-xs">MCPMenuBar.app</code> to /Applications and open it.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 font-semibold">3</div>
+              <div>
+                <h4 class="font-semibold">Grant permissions</h4>
+                <p class="text-slate-400 text-sm">Approve Screen Recording and Accessibility when prompted. The app guides you through it.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+        <div class="rounded-2xl bg-slate-900/50 border border-white/5 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold">macOS menu bar</h3>
+            <span class="text-xs text-slate-500">MCPMenuBar</span>
+          </div>
+          <div class="rounded-lg bg-slate-950 border border-white/5 p-4 mb-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-5 h-5 rounded bg-slate-700 flex items-center justify-center">
+                  <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z"/></svg>
+                </div>
+                <span class="text-sm text-slate-300">MCPMenuBar</span>
+              </div>
+              <span class="text-xs text-emerald-400">● running</span>
+            </div>
+            <div class="mt-4 space-y-2 text-sm">
+              <div class="flex justify-between text-slate-400"><span>Status</span> <span class="text-slate-200">Server running</span></div>
+              <div class="flex justify-between text-slate-400"><span>Port</span> <span class="text-slate-200">7357</span></div>
+              <div class="flex justify-between text-slate-400"><span>Screen Recording</span> <span class="text-emerald-400">Granted</span></div>
+              <div class="flex justify-between text-slate-400"><span>Accessibility</span> <span class="text-emerald-400">Granted</span></div>
+            </div>
+          </div>
+          <div class="code text-xs text-slate-400 bg-slate-950 border border-white/5 rounded p-3 overflow-x-auto">
+$ git clone https://github.com/TJCurnutte/mcp-computer-use.git
+$ cd mcp-computer-use/MacMenuBar/MCPMenuBar
+$ ./build_app.sh
+$ open build/MCPMenuBar.app
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="setup" class="py-20 px-6 border-t border-white/5">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Connect your MCP client</h2>
+      <p class="text-slate-400 text-center max-w-2xl mx-auto mb-12">MCPMenuBar uses the stdio bridge to connect any MCP client to its TCP server. Add it to your config once and it just works.</p>
+
+      <div class="rounded-2xl bg-slate-900/50 border border-white/5 overflow-hidden">
+        <div class="flex border-b border-white/5">
+          <button class="px-6 py-3 text-sm font-medium text-brand-300 border-b-2 border-brand-500 bg-white/5">Claude / Cursor / Windsurf</button>
+        </div>
+        <div class="p-6 overflow-x-auto">
+          <pre class="code text-sm text-slate-300">{
+  "mcpServers": {
+    "mcp-computer-use": {
+      "command": "/Users/you/mcp-computer-use/.venv/bin/python",
+      "args": [
+        "/Users/you/mcp-computer-use/MacMenuBar/bridge/mcp_bridge.py"
+      ],
+      "cwd": "/Users/you/mcp-computer-use"
+    }
+  }
+}</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-12 px-6 border-t border-white/5">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-400 to-violet-500 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></svg>
+        </div>
+        <span class="font-semibold">MCPMenuBar</span>
+      </div>
+      <div class="text-slate-500 text-sm">
+        Built by <a href="https://github.com/TJCurnutte" class="text-slate-300 hover:text-white">@TJCurnutte</a>.
+        <a href="https://github.com/TJCurnutte/mcp-computer-use" class="ml-4 text-slate-300 hover:text-white">GitHub</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
