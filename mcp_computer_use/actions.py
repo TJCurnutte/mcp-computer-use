@@ -2,6 +2,7 @@
 
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import threading
@@ -29,6 +30,11 @@ from .utils import (
 logger = get_logger("mcp-computer-use.actions")
 
 pyautogui.FAILSAFE = CONFIG.fail_safe
+
+
+def _escape_applescript_string(value: str) -> str:
+    """Escape backslashes and double quotes for safe AppleScript string interpolation."""
+    return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
 # ---------------------------------------------------------------------------
@@ -192,9 +198,12 @@ def process_kill(process_id: str, signal: str = "SIGTERM") -> dict:
 def _exec_shell_command(command: str, timeout: int, cwd: Optional[str]) -> dict:
     try:
         logger.info(f"Running shell command: {command}")
+        args = shlex.split(command)
+        if not args:
+            return {"error": "empty command", "command": command}
         result = subprocess.run(
-            command,
-            shell=True,
+            args,
+            shell=False,
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -208,6 +217,8 @@ def _exec_shell_command(command: str, timeout: int, cwd: Optional[str]) -> dict:
         }
     except subprocess.TimeoutExpired:
         return {"error": "command timed out", "command": command}
+    except ValueError as e:
+        return {"error": f"invalid shell command syntax: {e}", "command": command}
     except Exception as e:
         return {"error": str(e), "command": command}
 
@@ -240,11 +251,6 @@ def run_shell_command(command: str = "", timeout: int = 60, cwd: Optional[str] =
     return _exec_shell_command(command, timeout, cwd)
 
 
-def confirm_sensitive_action(pending_id: str) -> dict:
-    """Execute a previously queued sensitive action."""
-    return run_shell_command(pending_id=pending_id)
-
-
 # ---------------------------------------------------------------------------
 # Clipboard
 # ---------------------------------------------------------------------------
@@ -270,7 +276,8 @@ def clipboard_set(text: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def open_app(name: str) -> dict:
-    script = f'tell application "{name}" to activate'
+    safe_name = _escape_applescript_string(name)
+    script = f'tell application "{safe_name}" to activate'
     return _run_applescript(script)
 
 
@@ -333,19 +340,21 @@ def list_windows_applescript() -> str:
 
 
 def focus_window(app_name: str, window_name: Optional[str] = None) -> dict:
+    safe_app_name = _escape_applescript_string(app_name)
     if window_name:
+        safe_window_name = _escape_applescript_string(window_name)
         script = f'''
         tell application "System Events"
-            tell process "{app_name}"
+            tell process "{safe_app_name}"
                 set frontmost to true
-                set w to first window whose name contains "{window_name}"
+                set w to first window whose name contains "{safe_window_name}"
                 set value of attribute "AXMain" of w to true
                 set value of attribute "AXFocused" of w to true
             end tell
         end tell
         '''
     else:
-        script = f'tell application "{app_name}" to activate'
+        script = f'tell application "{safe_app_name}" to activate'
     return _run_applescript(script)
 
 
@@ -372,10 +381,14 @@ def batch(operations: list) -> dict:
     results = []
     for op in operations:
         try:
-            action = op.pop("action")
+            action = op.get("action")
+            if not action:
+                results.append({"error": "missing action"})
+                continue
             handler = BATCH_HANDLERS.get(action)
+            op_args = {k: v for k, v in op.items() if k != "action"}
             if handler:
-                results.append(handler(**op))
+                results.append(handler(**op_args))
             else:
                 results.append({"error": f"unknown action {action}"})
         except Exception as e:

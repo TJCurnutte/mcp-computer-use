@@ -39,9 +39,9 @@ final class Logger {
             }
 
             if let handle = FileHandle(forWritingAtPath: logFileURL.path) {
+                defer { handle.closeFile() }
                 handle.seekToEndOfFile()
                 try? handle.write(contentsOf: data)
-                handle.closeFile()
             }
         } else {
             try? data.write(to: logFileURL, options: .atomic)

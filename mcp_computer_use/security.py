@@ -2,7 +2,6 @@
 
 import re
 import shlex
-import subprocess
 from pathlib import Path
 from typing import List
 
@@ -66,18 +65,7 @@ class SecurityPolicy:
             return False
         base = Path(parts[0]).name
         allowed = [Path(c).name for c in self.config.allowed_shell_commands]
-        if base in allowed:
-            return True
-        # Also allow absolute paths to allowed binaries
-        try:
-            result = subprocess.run(["which", base], capture_output=True, text=True)
-            if result.returncode == 0:
-                binary = result.stdout.strip()
-                if Path(binary).name in allowed:
-                    return True
-        except Exception:
-            pass
-        return False
+        return base in allowed
 
     def requires_confirmation(self, command: str) -> bool:
         """Check whether a command requires explicit user confirmation.

@@ -200,39 +200,42 @@ def main() -> int:
         return 1
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    set_socket_options(sock)
-    sock.settimeout(CONNECT_TIMEOUT)
-
+    connected = False
     try:
+        set_socket_options(sock)
+        sock.settimeout(CONNECT_TIMEOUT)
         sock.connect(("127.0.0.1", port))
+        connected = True
     except ConnectionRefusedError:
         print(
             f"mcp_bridge: Connection refused. MCPMenuBar is not running on 127.0.0.1:{port}.",
             file=sys.stderr,
         )
-        sock.close()
         return 2
     except PermissionError as exc:
         print(
             f"mcp_bridge: Permission denied connecting to 127.0.0.1:{port}: {exc}",
             file=sys.stderr,
         )
-        sock.close()
         return 3
     except (socket.timeout, TimeoutError):
         print(
             f"mcp_bridge: Connection timed out. MCPMenuBar is not responding on 127.0.0.1:{port}.",
             file=sys.stderr,
         )
-        sock.close()
         return 4
     except OSError as exc:
         print(
             f"mcp_bridge: Could not connect to 127.0.0.1:{port}: {exc}. Is MCPMenuBar running?",
             file=sys.stderr,
         )
-        sock.close()
         return 2
+    finally:
+        if not connected:
+            try:
+                sock.close()
+            except OSError:
+                pass
 
     sock.settimeout(None)
 

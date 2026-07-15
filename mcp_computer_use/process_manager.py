@@ -2,6 +2,7 @@
 
 import os
 import queue
+import shlex
 import signal
 import subprocess
 import threading
@@ -26,9 +27,12 @@ class ProcessManager:
     def start(self, command: str, cwd: Optional[str] = None, env: Optional[dict] = None) -> dict:
         process_id = str(uuid.uuid4())
         try:
+            args = shlex.split(command)
+            if not args:
+                return {"error": "empty command", "command": command}
             proc = subprocess.Popen(
-                command,
-                shell=True,
+                args,
+                shell=False,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -79,10 +83,12 @@ class ProcessManager:
         q.put(("exit", proc.returncode))
 
     def read(self, process_id: str, timeout: float = 0.5, max_lines: int = 100) -> dict:
-        with self._locks.get(process_id, threading.Lock()):
-            pass
-        q = self._output_queues.get(process_id)
-        proc = self._processes.get(process_id)
+        lock = self._locks.get(process_id)
+        if lock is None:
+            return {"error": "process not found", "process_id": process_id}
+        with lock:
+            q = self._output_queues.get(process_id)
+            proc = self._processes.get(process_id)
         if q is None or proc is None:
             return {"error": "process not found", "process_id": process_id}
 
@@ -108,17 +114,21 @@ class ProcessManager:
         }
 
     def kill(self, process_id: str, signal_name: str = "SIGTERM") -> dict:
-        proc = self._processes.get(process_id)
-        if proc is None:
+        lock = self._locks.get(process_id)
+        if lock is None:
             return {"error": "process not found", "process_id": process_id}
-        try:
+        with lock:
+            proc = self._processes.get(process_id)
+            if proc is None:
+                return {"error": "process not found", "process_id": process_id}
             sig = getattr(signal, signal_name, None)
-            if sig is None:
-                return {"error": f"unknown signal {signal_name}", "process_id": process_id}
-            proc.send_signal(sig)
-            return {"killed": True, "process_id": process_id, "signal": signal_name}
-        except Exception as e:
-            return {"error": str(e), "process_id": process_id}
+            if sig is None or not isinstance(sig, int) or not (0 < sig < signal.NSIG):
+                return {"error": f"invalid signal {signal_name}", "process_id": process_id}
+            try:
+                proc.send_signal(sig)
+                return {"killed": True, "process_id": process_id, "signal": signal_name}
+            except Exception as e:
+                return {"error": str(e), "process_id": process_id}
 
 
 PROCESS_MANAGER = ProcessManager()

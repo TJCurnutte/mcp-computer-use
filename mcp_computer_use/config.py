@@ -6,6 +6,20 @@ from pathlib import Path
 from typing import List
 
 
+def _safe_int(value, default: int) -> int:
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return default
+
+
+def _safe_float(value, default: float) -> float:
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return default
+
+
 @dataclass
 class Config:
     """Runtime configuration loaded from environment variables and config file."""
@@ -47,9 +61,15 @@ class Config:
         config = cls()
 
         # Environment variables
-        config.max_screenshot_dim = int(os.getenv("MCP_MAX_SCREENSHOT_DIM", config.max_screenshot_dim))
-        config.pause_between_actions = float(os.getenv("MCP_PAUSE", config.pause_between_actions))
-        config.move_duration = float(os.getenv("MCP_MOVE_DURATION", config.move_duration))
+        config.max_screenshot_dim = _safe_int(
+            os.getenv("MCP_MAX_SCREENSHOT_DIM", config.max_screenshot_dim), config.max_screenshot_dim
+        )
+        config.pause_between_actions = _safe_float(
+            os.getenv("MCP_PAUSE", config.pause_between_actions), config.pause_between_actions
+        )
+        config.move_duration = _safe_float(
+            os.getenv("MCP_MOVE_DURATION", config.move_duration), config.move_duration
+        )
         config.log_level = os.getenv("MCP_LOG_LEVEL", config.log_level)
 
         env_allow = os.getenv("MCP_ALLOWED_SHELL_COMMANDS")

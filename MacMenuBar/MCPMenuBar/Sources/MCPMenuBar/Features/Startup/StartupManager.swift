@@ -146,7 +146,7 @@ final class StartupManager: NSObject, ObservableObject {
 
         // Walk up from the executable to find the LaunchAgent directory in the repo.
         let executableURL = Bundle.main.executableURL
-            ?? URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0])
+            ?? URL(fileURLWithPath: ProcessInfo.processInfo.arguments.first ?? "/Applications/MCPMenuBar.app/Contents/MacOS/MCPMenuBar")
         var url = executableURL.deletingLastPathComponent()
         let root = URL(fileURLWithPath: "/")
         while url != root {
