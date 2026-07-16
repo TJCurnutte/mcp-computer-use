@@ -128,7 +128,7 @@
             <div class="text-slate-500 text-xs mb-1">Claude</div>
             <div class="text-slate-300 mb-3">Take a screenshot, then open Safari and search for "Reflex".</div>
             <div class="text-slate-500 text-xs mb-1">Reflex</div>
-            <div class="code text-sm text-emerald-400 mb-2">> screenshot: 2056x1329 PNG</div>
+            <div class="code text-sm text-emerald-400 mb-2">> screenshot: 2056x1329 JPEG</div>
             <div class="code text-sm text-emerald-400 mb-2">> open_app("Safari")</div>
             <div class="code text-sm text-emerald-400 mb-2">> focus_window("Safari")</div>
             <div class="code text-sm text-emerald-400">> keyboard_type("Reflex") + key("return")</div>
@@ -142,6 +142,45 @@
       </div>
     </div>
   </header>
+
+  <section id="demo" class="py-20 px-6 border-t border-white/5">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">See it in action</h2>
+      <p class="text-slate-400 max-w-2xl mx-auto mb-10">
+        Reflex opens apps, types, runs shell commands, and captures the screen in milliseconds. No human in the loop.
+      </p>
+      <div class="rounded-2xl overflow-hidden border border-white/10 bg-slate-900/50 shadow-2xl">
+        <video
+          class="w-full aspect-video"
+          src="reflex-demo.mp4"
+          poster=""
+          controls
+          autoplay
+          muted
+          loop
+          playsinline
+        ></video>
+      </div>
+      <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div class="p-4 rounded-xl bg-slate-900/50 border border-white/5">
+          <div class="text-2xl font-bold text-brand-400">~95ms</div>
+          <div class="text-slate-500">screenshot</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/50 border border-white/5">
+          <div class="text-2xl font-bold text-brand-400">~15ms</div>
+          <div class="text-slate-500">mouse move</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/50 border border-white/5">
+          <div class="text-2xl font-bold text-brand-400">~32ms</div>
+          <div class="text-slate-500">key press</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/50 border border-white/5">
+          <div class="text-2xl font-bold text-brand-400">31</div>
+          <div class="text-slate-500">tools</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="features" class="py-20 px-6 border-t border-white/5">
     <div class="max-w-6xl mx-auto">
