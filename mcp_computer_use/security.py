@@ -56,14 +56,21 @@ class SecurityPolicy:
         return False
 
     def is_allowed_shell(self, command: str) -> bool:
-        """Check whether the command base is in the allowlist."""
+        """Check whether the command base is in the allowlist.
+
+        Rejects absolute or relative paths to prevent a malicious binary named
+        like an allowed command from being executed.
+        """
         try:
             parts = shlex.split(command)
         except ValueError:
             parts = command.split()
         if not parts:
             return False
-        base = Path(parts[0]).name
+        executable = parts[0]
+        if "/" in executable or "\\" in executable:
+            return False
+        base = Path(executable).name
         allowed = [Path(c).name for c in self.config.allowed_shell_commands]
         return base in allowed
 
