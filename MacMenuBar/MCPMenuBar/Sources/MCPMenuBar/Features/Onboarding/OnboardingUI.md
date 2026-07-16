@@ -1,6 +1,6 @@
 # Onboarding UI
 
-This feature provides the first-run setup window for MCPMenuBar.
+This feature provides the first-run setup window for Reflex.
 
 ## Files
 
@@ -46,7 +46,7 @@ class AppCoordinator: OnboardingDelegate {
 
 ## Behavior
 
-- The window is titled **"MCPMenuBar Setup"**, centered, resizable, and has a minimum size of 600×400.
+- The window is titled **"Reflex Setup"**, centered, resizable, and has a minimum size of 600×400.
 - Pages are shown in order:
   1. **Welcome** — explains the app.
   2. **Move to Applications** — asks the user to keep the app in `/Applications`.

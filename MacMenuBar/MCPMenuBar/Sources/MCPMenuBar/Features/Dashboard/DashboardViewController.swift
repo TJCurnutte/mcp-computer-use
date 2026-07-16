@@ -396,7 +396,7 @@ final class DashboardViewController: NSViewController {
         appIcon.translatesAutoresizingMaskIntoConstraints = false
         iconBadge.addSubview(appIcon)
 
-        let title = makeLabel("MCPMenuBar", font: DashboardTheme.fontTitle, color: DashboardTheme.primaryText)
+        let title = makeLabel("Reflex", font: DashboardTheme.fontTitle, color: DashboardTheme.primaryText)
         let subtitle = makeLabel(
             "Bridge control & diagnostics",
             font: DashboardTheme.fontCaption,

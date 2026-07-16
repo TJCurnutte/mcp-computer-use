@@ -1,6 +1,6 @@
-# MCPMenuBar Distribution
+# Reflex Distribution
 
-This directory contains the release packaging assets for `MCPMenuBar`.
+This directory contains the release packaging assets for `Reflex`.
 
 - `build_dmg.sh` — creates a drag-to-Applications DMG.
 - `build_zip.sh` — creates a `.zip` archive of the app.
@@ -9,7 +9,7 @@ This directory contains the release packaging assets for `MCPMenuBar`.
 
 ## Build the app
 
-`build_dmg.sh` and `build_zip.sh` both read `MCPMenuBar/MCPMenuBar/build/MCPMenuBar.app`, which is produced by:
+`build_dmg.sh` and `build_zip.sh` both read `MacMenuBar/MCPMenuBar/build/Reflex.app`, which is produced by:
 
 ```bash
 cd MacMenuBar/MCPMenuBar
@@ -29,8 +29,8 @@ From this directory:
 
 Outputs:
 
-- `MacMenuBar/MCPMenuBar/build/MCPMenuBar.dmg`
-- `MacMenuBar/MCPMenuBar/build/MCPMenuBar.zip`
+- `MacMenuBar/MCPMenuBar/build/Reflex.dmg`
+- `MacMenuBar/MCPMenuBar/build/Reflex.zip`
 
 `build_dmg.sh` attempts to set a polished window background and icon positions via `osascript`/`Finder`. If it is run in a non-GUI environment (e.g. CI) it falls back to placing `Instructions.txt` in the DMG window. The default `osascript` timeout is 60 seconds; you can override it with:
 
@@ -46,7 +46,7 @@ For end-user install steps, see `INSTALL.md`.
 
 ## Install the LaunchAgent
 
-The included LaunchAgent starts `MCPMenuBar` at login:
+The included LaunchAgent starts `Reflex` at login:
 
 ```bash
 cd MacMenuBar
@@ -59,4 +59,4 @@ This copies `LaunchAgent/com.curnutte.mcp-computer-use.plist` to `~/Library/Laun
 launchctl start com.curnutte.mcp-computer-use
 ```
 
-If you installed the app somewhere other than `/Applications/MCPMenuBar.app`, edit the `ProgramArguments` path in the plist before loading it.
+If you installed the app somewhere other than `/Applications/Reflex.app`, edit the `ProgramArguments` path in the plist before loading it.

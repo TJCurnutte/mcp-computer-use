@@ -5,7 +5,7 @@ import CoreGraphics
 import Combine
 import IOKit.hidsystem
 
-/// The privacy permission categories MCPMenuBar depends on.
+/// The privacy permission categories Reflex depends on.
 enum PermissionType: String, CaseIterable, Identifiable, Hashable {
     case accessibility
     case screenRecording

@@ -3,7 +3,7 @@
 
 Simulates the post-onboarding flow by:
 1. Checking that ~/.mcp-computer-use/onboarding-complete exists.
-2. Checking that the MCPMenuBar port file is present.
+2. Checking that the Reflex port file is present.
 3. Running tests/test_bridge.py and confirming it reports a pass.
 
 Usage:
@@ -31,7 +31,7 @@ def main() -> int:
     if not PORT_FILE.exists():
         print(
             f"Port file not found: {PORT_FILE}\n"
-            "Make sure MCPMenuBar is running and has written its TCP port.",
+            "Make sure Reflex is running and has written its TCP port.",
             file=sys.stderr,
         )
         return 1

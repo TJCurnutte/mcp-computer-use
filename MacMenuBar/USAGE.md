@@ -1,12 +1,12 @@
-# MCPMenuBar — User Walkthrough
+# Reflex — User Walkthrough
 
 A step-by-step guide from download to first use.
 
 ## 1. Download and install
 
 1. Download the latest `.dmg` or `.zip` from the release page.
-2. Open the `.dmg` and drag `MCPMenuBar.app` to `/Applications`.
-3. Double-click `/Applications/MCPMenuBar.app` to launch it.
+2. Open the `.dmg` and drag `Reflex.app` to `/Applications`.
+3. Double-click `/Applications/Reflex.app` to launch it.
 
 > **Tip:** The first time you open an app downloaded from the internet, macOS may
 > show a security warning. Go to `System Settings → Privacy & Security` and click
@@ -14,9 +14,9 @@ A step-by-step guide from download to first use.
 
 ## 2. First-run onboarding
 
-When `MCPMenuBar` launches for the first time, an onboarding window appears:
+When `Reflex` launches for the first time, an onboarding window appears:
 
-1. **Move to Applications** — confirms the app is in `/Applications/MCPMenuBar.app`.
+1. **Move to Applications** — confirms the app is in `/Applications/Reflex.app`.
 2. **Permissions** — opens `System Settings → Privacy & Security` and asks for:
    - **Accessibility** — for mouse and keyboard control.
    - **Screen Recording** — for screenshots and OCR.
@@ -24,11 +24,11 @@ When `MCPMenuBar` launches for the first time, an onboarding window appears:
 3. **IDE config** — installs the MCP config for Devin, Windsurf, and/or Cursor.
 4. **Test Connection** — calls `get_status` and `screenshot` to verify everything works.
 
-The onboarding window closes automatically and `MCPMenuBar` moves to the menu bar.
+The onboarding window closes automatically and `Reflex` moves to the menu bar.
 
 ## 3. Menu bar and dashboard
 
-Look for the `MCPMenuBar` icon in the top-right menu bar. Click it to:
+Look for the `Reflex` icon in the top-right menu bar. Click it to:
 
 - See the current server status and port.
 - Start or stop the server.
@@ -59,14 +59,14 @@ See `integration.md` for the exact JSON snippets.
 
 ## 5. Start at login
 
-To start `MCPMenuBar` automatically when you log in, run:
+To start `Reflex` automatically when you log in, run:
 
 ```bash
 cd /Users/curnutte/CascadeProjects/mcp-computer-use/MacMenuBar
 ./scripts/install_launchagent.sh
 ```
 
-This installs and loads a LaunchAgent that runs `/Applications/MCPMenuBar.app`.
+This installs and loads a LaunchAgent that runs `/Applications/Reflex.app`.
 
 ## 6. Verify the setup
 

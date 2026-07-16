@@ -17,7 +17,7 @@ protocol ServerManagerDelegate: AnyObject {
 final class ServerManager: SocketListenerDelegate, BridgeConnectionDelegate {
     weak var delegate: ServerManagerDelegate?
 
-    private let queue = DispatchQueue(label: "com.example.MCPMenuBar.server")
+    private let queue = DispatchQueue(label: "com.curnutte.reflex.server")
     private let listener: SocketListener
     private var activeBridges: [BridgeConnection] = []
     private var isStopping = false

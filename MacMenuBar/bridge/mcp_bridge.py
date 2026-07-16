@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""MCP stdio-to-TCP bridge for the MCPMenuBar menu-bar helper.
+"""MCP stdio-to-TCP bridge for the Reflex menu-bar helper.
 
 Usage:
     /usr/bin/env python3 MacMenuBar/bridge/mcp_bridge.py
@@ -194,7 +194,7 @@ def main() -> int:
 
     if port is None:
         print(
-            f"mcp_bridge: MCPMenuBar is not running (could not read a valid port from {PORT_FILE}).",
+            f"mcp_bridge: Reflex is not running (could not read a valid port from {PORT_FILE}).",
             file=sys.stderr,
         )
         return 1
@@ -208,7 +208,7 @@ def main() -> int:
         connected = True
     except ConnectionRefusedError:
         print(
-            f"mcp_bridge: Connection refused. MCPMenuBar is not running on 127.0.0.1:{port}.",
+            f"mcp_bridge: Connection refused. Reflex is not running on 127.0.0.1:{port}.",
             file=sys.stderr,
         )
         return 2
@@ -220,13 +220,13 @@ def main() -> int:
         return 3
     except (socket.timeout, TimeoutError):
         print(
-            f"mcp_bridge: Connection timed out. MCPMenuBar is not responding on 127.0.0.1:{port}.",
+            f"mcp_bridge: Connection timed out. Reflex is not responding on 127.0.0.1:{port}.",
             file=sys.stderr,
         )
         return 4
     except OSError as exc:
         print(
-            f"mcp_bridge: Could not connect to 127.0.0.1:{port}: {exc}. Is MCPMenuBar running?",
+            f"mcp_bridge: Could not connect to 127.0.0.1:{port}: {exc}. Is Reflex running?",
             file=sys.stderr,
         )
         return 2

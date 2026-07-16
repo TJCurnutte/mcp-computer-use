@@ -43,7 +43,7 @@ If `OnboardingController` is initialized with `window: nil`, it creates an `Onbo
 
 ## What the controller does
 
-1. `moveToApplications` — checks `Bundle.main.bundlePath` against `/Applications/MCPMenuBar.app`.
+1. `moveToApplications` — checks `Bundle.main.bundlePath` against `/Applications/Reflex.app`.
 2. `permissions` — uses `PermissionChecker` for Accessibility and Screen Recording.
 3. `installConfig` — updates `~/.config/devin/config.json` and `~/.codeium/windsurf/mcp_config.json` if they exist; otherwise shows a copyable snippet.
 4. `test` — spawns `mcp_bridge.py` as a subprocess and sends `get_status` and `screenshot` JSON-RPC calls.

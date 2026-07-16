@@ -73,9 +73,9 @@ final class AppLifecycleManager {
             backing: .buffered,
             defer: false
         )
-        window.title = "MCPMenuBar Onboarding"
+        window.title = "Reflex Onboarding"
         window.isReleasedWhenClosed = false
-        window.contentView = placeholderView(title: "Welcome to MCPMenuBar")
+        window.contentView = placeholderView(title: "Welcome to Reflex")
         return window
     }
 
@@ -86,9 +86,9 @@ final class AppLifecycleManager {
             backing: .buffered,
             defer: false
         )
-        window.title = "MCPMenuBar Dashboard"
+        window.title = "Reflex Dashboard"
         window.isReleasedWhenClosed = false
-        window.contentView = placeholderView(title: "MCPMenuBar Dashboard")
+        window.contentView = placeholderView(title: "Reflex Dashboard")
         return window
     }
 

@@ -12,10 +12,10 @@
     <string>com.curnutte.mcp-computer-use.menubar</string>
 
     <key>CFBundleName</key>
-    <string>MCPMenuBar</string>
+    <string>Reflex</string>
 
     <key>CFBundleDisplayName</key>
-    <string>MCPMenuBar</string>
+    <string>Reflex</string>
 
     <key>CFBundleExecutable</key>
     <string>MCPMenuBar</string>
@@ -45,13 +45,13 @@
     <string>Copyright © 2025 curnutte. MIT License.</string>
 
     <key>NSAccessibilityUsageDescription</key>
-    <string>MCPMenuBar hosts a Python helper that controls the mouse and keyboard on behalf of your coding assistant.</string>
+    <string>Reflex hosts a Python helper that controls the mouse and keyboard on behalf of your coding assistant.</string>
 
     <key>NSScreenCaptureUsageDescription</key>
-    <string>MCPMenuBar hosts a Python helper that captures screenshots and reads window information for your coding assistant.</string>
+    <string>Reflex hosts a Python helper that captures screenshots and reads window information for your coding assistant.</string>
 
     <key>NSAppleEventsUsageDescription</key>
-    <string>MCPMenuBar may need to open or activate other applications via AppleScript.</string>
+    <string>Reflex may need to open or activate other applications via AppleScript.</string>
 
     <key>NSHighResolutionCapable</key>
     <true/>

@@ -3,7 +3,7 @@ import Foundation
 final class Logger {
     static let shared = Logger()
 
-    private let queue = DispatchQueue(label: "com.example.MCPMenuBar.logger")
+    private let queue = DispatchQueue(label: "com.curnutte.reflex.logger")
     private let maxSize: UInt64 = 1_048_576 // 1 MiB
 
     private var logFileURL: URL {

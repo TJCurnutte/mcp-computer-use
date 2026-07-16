@@ -25,10 +25,10 @@ class Config:
     """Runtime configuration loaded from environment variables and config file."""
 
     max_screenshot_dim: int = 1280
-    screenshot_format: str = "PNG"
-    jpeg_quality: int = 80
-    pause_between_actions: float = 0.1
-    move_duration: float = 0.2
+    screenshot_format: str = "JPEG"
+    jpeg_quality: int = 85
+    pause_between_actions: float = 0.0
+    move_duration: float = 0.0
     fail_safe: bool = True
     log_level: str = "INFO"
     log_dir: Path = field(default_factory=lambda: Path.home() / ".mcp-computer-use" / "logs")

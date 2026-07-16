@@ -14,7 +14,7 @@ struct Paths {
     }
 
     static var logFile: URL {
-        logDirectory.appendingPathComponent("mcp-menubar.log")
+        logDirectory.appendingPathComponent("reflex.log")
     }
 
     static var portFile: URL {

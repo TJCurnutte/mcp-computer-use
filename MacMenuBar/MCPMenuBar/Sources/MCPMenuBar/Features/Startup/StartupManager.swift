@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-/// Manages the MCPMenuBar LaunchAgent so the app can start at login.
+/// Manages the Reflex LaunchAgent so the app can start at login.
 final class StartupManager: NSObject, ObservableObject {
     static let shared = StartupManager()
 
@@ -146,7 +146,7 @@ final class StartupManager: NSObject, ObservableObject {
 
         // Walk up from the executable to find the LaunchAgent directory in the repo.
         let executableURL = Bundle.main.executableURL
-            ?? URL(fileURLWithPath: ProcessInfo.processInfo.arguments.first ?? "/Applications/MCPMenuBar.app/Contents/MacOS/MCPMenuBar")
+            ?? URL(fileURLWithPath: ProcessInfo.processInfo.arguments.first ?? "/Applications/Reflex.app/Contents/MacOS/MCPMenuBar")
         var url = executableURL.deletingLastPathComponent()
         let root = URL(fileURLWithPath: "/")
         while url != root {
@@ -237,9 +237,9 @@ final class StartupManager: NSObject, ObservableObject {
     <key>ThrottleInterval</key>
     <integer>10</integer>
     <key>StandardOutPath</key>
-    <string>__HOME__/.mcp-computer-use/logs/MCPMenuBar.out.log</string>
+    <string>__HOME__/.mcp-computer-use/logs/Reflex.out.log</string>
     <key>StandardErrorPath</key>
-    <string>__HOME__/.mcp-computer-use/logs/MCPMenuBar.err.log</string>
+    <string>__HOME__/.mcp-computer-use/logs/Reflex.err.log</string>
 </dict>
 </plist>
 """

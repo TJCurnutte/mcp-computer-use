@@ -31,7 +31,7 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
 
     func onboardingDidRequestMoveToApplications() {
         let appPath = Bundle.main.bundlePath
-        if appPath == "/Applications/MCPMenuBar.app" {
+        if appPath == "/Applications/Reflex.app" {
             transition(to: .permissions)
         } else {
             showMoveAlert()
@@ -109,7 +109,7 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
     private func showMoveAlert() {
         let alert = NSAlert()
         alert.messageText = "Move to Applications"
-        alert.informativeText = "MCPMenuBar must be in /Applications/MCPMenuBar.app to work correctly. Please drag it there and relaunch."
+        alert.informativeText = "Reflex must be in /Applications/Reflex.app to work correctly. Please drag it there and relaunch."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "Open Applications")
         alert.addButton(withTitle: "OK")
@@ -124,7 +124,7 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
     private func showPermissionsAlert() {
         let alert = NSAlert()
         alert.messageText = "Permissions Required"
-        alert.informativeText = "MCPMenuBar needs Accessibility and Screen Recording permissions for the Python interpreter that .venv/bin/python resolves to. The System Settings panes have been opened. Grant them, then quit and reopen MCPMenuBar."
+        alert.informativeText = "Reflex needs Accessibility and Screen Recording permissions for the Python interpreter that .venv/bin/python resolves to. The System Settings panes have been opened. Grant them, then quit and reopen Reflex."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "Open Privacy & Security")
         alert.addButton(withTitle: "OK")
@@ -138,8 +138,8 @@ final class OnboardingController: ObservableObject, OnboardingDelegate {
 
     private func showRestartAlert() {
         let alert = NSAlert()
-        alert.messageText = "Restart MCPMenuBar"
-        alert.informativeText = "Permissions have been requested. If you already granted them, quit and reopen MCPMenuBar to apply the change."
+        alert.messageText = "Restart Reflex"
+        alert.informativeText = "Permissions have been requested. If you already granted them, quit and reopen Reflex to apply the change."
         alert.alertStyle = .informational
         alert.addButton(withTitle: "OK")
         _ = alert.runModal()
@@ -340,7 +340,7 @@ private final class BridgeTestSession {
     private let process: Process
     private let bridgeURL: URL
     private var stdoutBuffer = Data()
-    private let queue = DispatchQueue(label: "com.curnutte.MCPMenuBar.bridge-test")
+    private let queue = DispatchQueue(label: "com.curnutte.reflex.bridge-test")
     private var pending: (id: Int, semaphore: DispatchSemaphore, result: String?)?
     private var capturedError = ""
     private var completion: ((String?, String?, String?) -> Void)?
@@ -387,7 +387,7 @@ private final class BridgeTestSession {
                     params: [
                         "protocolVersion": "2024-11-05",
                         "capabilities": [String: Any](),
-                        "clientInfo": ["name": "MCPMenuBar-onboarding", "version": "1.0.0"]
+                        "clientInfo": ["name": "Reflex-onboarding", "version": "1.0.0"]
                     ]
                 )
 

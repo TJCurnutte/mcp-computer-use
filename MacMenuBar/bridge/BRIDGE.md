@@ -1,8 +1,8 @@
 # mcp_bridge
 
-`mcp_bridge.py` is a stdio-to-TCP bridge for MCPMenuBar. It is a drop-in
+`mcp_bridge.py` is a stdio-to-TCP bridge for Reflex. It is a drop-in
 stdio MCP transport that forwards newline-delimited JSON lines between the
-client's stdin/stdout and the MCPMenuBar TCP server on `127.0.0.1`.
+client's stdin/stdout and the Reflex TCP server on `127.0.0.1`.
 
 ## Usage
 
@@ -29,10 +29,10 @@ python3 MacMenuBar/bridge/mcp_bridge.py
 | Code | Meaning | Example message |
 |------|---------|-----------------|
 | 0 | Clean shutdown | — |
-| 1 | MCPMenuBar is not running / no valid port | `MCPMenuBar is not running (could not read a valid port ...)` |
-| 2 | Connection refused or other connect error | `Connection refused. MCPMenuBar is not running on 127.0.0.1:<port>.` |
+| 1 | Reflex is not running / no valid port | `Reflex is not running (could not read a valid port ...)` |
+| 2 | Connection refused or other connect error | `Connection refused. Reflex is not running on 127.0.0.1:<port>.` |
 | 3 | Permission denied | `Permission denied reading ...` |
-| 4 | Connection timed out | `Connection timed out. MCPMenuBar is not responding ...` |
+| 4 | Connection timed out | `Connection timed out. Reflex is not responding ...` |
 | 5 | Server unresponsive (heartbeat timeout) | `Server is unresponsive (heartbeat timeout).` |
 
 ## Notes

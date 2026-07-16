@@ -27,7 +27,7 @@ final class OnboardingWindow: NSWindowController {
             defer: false
         )
         window.contentViewController = pageViewController
-        window.title = "MCPMenuBar Setup"
+        window.title = "Reflex Setup"
         window.minSize = NSSize(width: 600, height: 400)
         window.isReleasedWhenClosed = false
 

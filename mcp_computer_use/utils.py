@@ -2,6 +2,8 @@ import base64
 import io
 import logging
 import sys
+import threading
+import time
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -40,8 +42,29 @@ def setup_logging(log_dir: Path, level: str = "INFO"):
     root.addHandler(logging.StreamHandler(sys.stderr))
 
 
-def scale_factor() -> float:
-    """Return the primary display scale factor (1.0 for non-Retina, 2.0 for Retina)."""
+# ---------------------------------------------------------------------------
+# Display geometry / scale factor
+# ---------------------------------------------------------------------------
+
+_SCALE_CACHE_TTL = 5.0
+_scale_lock = threading.Lock()
+_scale_cache: Dict[str, Tuple[float, float]] = {}
+
+
+def _cached_value(name: str, compute):
+    """Return a cached value, recomputing if older than the TTL."""
+    now = time.time()
+    with _scale_lock:
+        value, timestamp = _scale_cache.get(name, (None, 0))
+        if value is not None and now - timestamp < _SCALE_CACHE_TTL:
+            return value
+    value = compute()
+    with _scale_lock:
+        _scale_cache[name] = (value, now)
+    return value
+
+
+def _scale_factor_impl() -> float:
     try:
         import Quartz
         main_id = Quartz.CGMainDisplayID()
@@ -53,10 +76,41 @@ def scale_factor() -> float:
         return 1.0
 
 
+def scale_factor() -> float:
+    """Return the primary display scale factor, cached for a few seconds."""
+    return _cached_value("scale_factor", _scale_factor_impl)
+
+
+# ---------------------------------------------------------------------------
+# Screenshot capture (reuses a single MSS instance)
+# ---------------------------------------------------------------------------
+
+_mss_lock = threading.RLock()
+_mss_instance: mss.MSS = None
+_mss_created = 0.0
+_MSS_TTL = 30.0
+
+
+def _get_mss() -> mss.MSS:
+    """Return a long-lived mss instance, recreating it periodically so display changes are picked up."""
+    global _mss_instance, _mss_created
+    now = time.time()
+    if _mss_instance is None or now - _mss_created > _MSS_TTL:
+        if _mss_instance is not None:
+            try:
+                _mss_instance.close()
+            except Exception:
+                pass
+        _mss_instance = mss.mss()
+        _mss_created = now
+    return _mss_instance
+
+
 def list_displays() -> list:
     """Return list of display dicts with physical pixel dimensions."""
     displays = []
-    with mss.MSS() as sct:
+    with _mss_lock:
+        sct = _get_mss()
         for i, monitor in enumerate(sct.monitors[1:], start=1):
             displays.append(
                 {
@@ -71,8 +125,9 @@ def list_displays() -> list:
 
 
 def capture(display: int = 0, region: Tuple[int, int, int, int] = None) -> Tuple[Image.Image, Dict]:
-    """Capture a screenshot and return PIL Image and monitor metadata."""
-    with mss.MSS() as sct:
+    """Capture a screenshot and return a PIL Image and monitor metadata."""
+    with _mss_lock:
+        sct = _get_mss()
         if region:
             left, top, width, height = region
             monitor = {"left": left, "top": top, "width": width, "height": height}
@@ -89,12 +144,16 @@ def capture(display: int = 0, region: Tuple[int, int, int, int] = None) -> Tuple
 
 
 def resize_for_model(img: Image.Image, max_dim: int) -> Image.Image:
-    """Resize image to fit within max_dim while keeping aspect ratio."""
+    """Resize image to fit within max_dim while keeping aspect ratio.
+
+    Uses bilinear resampling for speed; quality loss is negligible for
+    model-sized screenshots.
+    """
     if max(img.width, img.height) <= max_dim:
         return img
     scale = max_dim / max(img.width, img.height)
     new_size = (int(img.width * scale), int(img.height * scale))
-    return img.resize(new_size, Image.Resampling.LANCZOS)
+    return img.resize(new_size, Image.Resampling.BILINEAR)
 
 
 def image_to_base64(img: Image.Image, fmt: str = "PNG", quality: int = 80) -> str:
@@ -107,14 +166,20 @@ def image_to_base64(img: Image.Image, fmt: str = "PNG", quality: int = 80) -> st
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 
-def click_scale_for_all_screens(max_screenshot_dim: int) -> float:
-    """Return the ratio of physical screen pixels to model screenshot pixels."""
-    with mss.MSS() as sct:
+def _click_scale_impl(max_screenshot_dim: int) -> float:
+    with _mss_lock:
+        sct = _get_mss()
         monitor = sct.monitors[0]
         max_dim = max(monitor["width"], monitor["height"])
     if max_dim <= max_screenshot_dim:
         return 1.0
     return max_dim / max_screenshot_dim
+
+
+def click_scale_for_all_screens(max_screenshot_dim: int) -> float:
+    """Return the ratio of physical screen pixels to model screenshot pixels."""
+    key = f"click_scale:{max_screenshot_dim}"
+    return _cached_value(key, lambda: _click_scale_impl(max_screenshot_dim))
 
 
 def scale_to_physical(x: int, y: int, scale: float) -> Tuple[int, int]:

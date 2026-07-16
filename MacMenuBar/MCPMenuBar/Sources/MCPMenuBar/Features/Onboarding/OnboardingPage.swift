@@ -11,7 +11,7 @@ enum OnboardingPage: CaseIterable {
 
     var title: String {
         switch self {
-        case .welcome:            return "Welcome to MCPMenuBar"
+        case .welcome:            return "Welcome to Reflex"
         case .moveToApplications: return "Move to Applications"
         case .permissions:        return "Grant Permissions"
         case .ideConfig:          return "Configure Your IDE"
@@ -22,13 +22,13 @@ enum OnboardingPage: CaseIterable {
     var body: String {
         switch self {
         case .welcome:
-            return "MCPMenuBar runs in your menu bar and bridges macOS control to your MCP client. This setup only takes a minute."
+            return "Reflex runs in your menu bar and bridges macOS control to your MCP client. This setup only takes a minute."
         case .moveToApplications:
-            return "For the best experience, keep MCPMenuBar in your /Applications folder. If it is not already there, move it now."
+            return "For the best experience, keep Reflex in your /Applications folder. If it is not already there, move it now."
         case .permissions:
-            return "MCPMenuBar needs Accessibility, Screen Recording, and Input Monitoring permissions to control your Mac safely."
+            return "Reflex needs Accessibility, Screen Recording, and Input Monitoring permissions to control your Mac safely."
         case .ideConfig:
-            return "Install the MCP bridge config for your IDE (Devin, Windsurf, Cursor, etc.) so it can talk to MCPMenuBar."
+            return "Install the MCP bridge config for your IDE (Devin, Windsurf, Cursor, etc.) so it can talk to Reflex."
         case .test:
             return "Run a quick status check and screenshot to confirm everything is connected."
         }

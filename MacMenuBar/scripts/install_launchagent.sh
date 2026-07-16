@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install the MCPMenuBar LaunchAgent so the menu-bar app starts at login.
+# Install the Reflex LaunchAgent so the menu-bar app starts at login.
 # Safe to re-run; no sudo is required.
 set -euo pipefail
 
@@ -8,9 +8,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SRC_PLIST="${SCRIPT_DIR}/../LaunchAgent/${PLIST_NAME}"
 DEST_DIR="${HOME}/Library/LaunchAgents"
 DEST_PLIST="${DEST_DIR}/${PLIST_NAME}"
-APP_PATH="/Applications/MCPMenuBar.app"
+APP_PATH="/Applications/Reflex.app"
 
-echo "==> Installing MCPMenuBar LaunchAgent..."
+echo "==> Installing Reflex LaunchAgent..."
 
 if [[ ! -f "$SRC_PLIST" ]]; then
     echo "Error: LaunchAgent plist not found at $SRC_PLIST" >&2

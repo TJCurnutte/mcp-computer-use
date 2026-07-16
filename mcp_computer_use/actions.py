@@ -13,7 +13,7 @@ from typing import Optional
 
 import pyautogui
 from .config import CONFIG
-from .ocr import find_text, find_text_lines, ocr_image
+from .ocr import find_all_text, ocr_image
 from .process_manager import PROCESS_MANAGER
 from .security import SECURITY
 from .utils import (
@@ -23,6 +23,7 @@ from .utils import (
     image_to_base64,
     list_displays,
     resize_for_model,
+    scale_factor,
     scale_to_logical,
     scale_to_physical,
 )
@@ -30,11 +31,17 @@ from .utils import (
 logger = get_logger("mcp-computer-use.actions")
 
 pyautogui.FAILSAFE = CONFIG.fail_safe
+pyautogui.PAUSE = 0.0
 
 
 def _escape_applescript_string(value: str) -> str:
     """Escape backslashes and double quotes for safe AppleScript string interpolation."""
     return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _image_data_uri(b64: str, fmt: str) -> str:
+    mime = "jpeg" if fmt.upper() == "JPEG" else "png"
+    return f"data:image/{mime};base64,{b64}"
 
 
 # ---------------------------------------------------------------------------
@@ -44,19 +51,8 @@ def _escape_applescript_string(value: str) -> str:
 def get_display_info() -> dict:
     return {
         "displays": list_displays(),
-        "scale_factor": _get_scale_factor(),
+        "scale_factor": scale_factor(),
     }
-
-
-def _get_scale_factor() -> float:
-    try:
-        import Quartz
-        main_id = Quartz.CGMainDisplayID()
-        bounds = Quartz.CGDisplayBounds(main_id)
-        pixel_width = Quartz.CGDisplayPixelsWide(main_id)
-        return pixel_width / bounds.size.width
-    except Exception:
-        return 1.0
 
 
 def take_screenshot(display: int = 0, scale: bool = True) -> dict:
@@ -71,14 +67,14 @@ def take_screenshot(display: int = 0, scale: bool = True) -> dict:
         "original_width": original_width,
         "original_height": original_height,
         "display": display,
-        "scale_factor": _get_scale_factor(),
+        "scale_factor": scale_factor(),
         "click_scale": click_scale_for_all_screens(CONFIG.max_screenshot_dim) if scale else 1.0,
-        "image": f"data:image/png;base64,{b64}",
+        "image": _image_data_uri(b64, CONFIG.screenshot_format),
     }
 
 
 def screenshot_region(left: int, top: int, width: int, height: int, scale: bool = True) -> dict:
-    """Capture a region of the screen and return a base64 PNG."""
+    """Capture a region of the screen and return a base64 image."""
     img, _ = capture(region=(left, top, width, height))
     original_width, original_height = img.width, img.height
     if scale:
@@ -90,8 +86,8 @@ def screenshot_region(left: int, top: int, width: int, height: int, scale: bool 
         "original_width": original_width,
         "original_height": original_height,
         "region": (left, top, width, height),
-        "scale_factor": _get_scale_factor(),
-        "image": f"data:image/png;base64,{b64}",
+        "scale_factor": scale_factor(),
+        "image": _image_data_uri(b64, CONFIG.screenshot_format),
     }
 
 
@@ -120,7 +116,7 @@ def mouse_move(x: int, y: int, duration: Optional[float] = None) -> dict:
 
 def mouse_click(x: int, y: int, button: str = "left", clicks: int = 1) -> dict:
     px, py = _physical_point(x, y)
-    pyautogui.click(px, py, button=button, clicks=clicks, duration=0.1)
+    pyautogui.click(px, py, button=button, clicks=clicks)
     return {"clicked": True, "x": px, "y": py, "button": button, "clicks": clicks}
 
 
@@ -311,7 +307,7 @@ def list_windows() -> dict:
         return {
             "windows": windows,
             "count": len(windows),
-            "scale_factor": _get_scale_factor(),
+            "scale_factor": scale_factor(),
             "click_scale": click_scale_for_all_screens(CONFIG.max_screenshot_dim),
         }
     except Exception as e:
@@ -393,7 +389,8 @@ def batch(operations: list) -> dict:
                 results.append({"error": f"unknown action {action}"})
         except Exception as e:
             results.append({"error": str(e)})
-        time.sleep(CONFIG.pause_between_actions)
+        if CONFIG.pause_between_actions > 0:
+            time.sleep(CONFIG.pause_between_actions)
     return {"results": results, "count": len(results)}
 
 
@@ -420,8 +417,7 @@ def find_text_on_screen(text: str, display: int = 0, scale: bool = True) -> dict
         img, _ = capture(display)
         if scale:
             img = resize_for_model(img, CONFIG.max_screenshot_dim)
-        line_matches = find_text_lines(img, text)
-        word_matches = find_text(img, text)
+        word_matches, line_matches = find_all_text(img, text)
         return {
             "query": text,
             "display": display,
@@ -445,9 +441,9 @@ def get_status() -> dict:
     perms = {}
     try:
         import Quartz
-        # Screenshot permission is implicitly tested by a quick capture
+        # Screenshot permission is implicitly tested by a tiny capture
         try:
-            capture(0)
+            capture(region=(0, 0, 10, 10))
             perms["screen_recording"] = True
         except Exception as e:
             perms["screen_recording"] = False

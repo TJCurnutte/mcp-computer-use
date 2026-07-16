@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var hotkeyManager: HotkeyManager!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Logger.shared.log("MCPMenuBar launched")
+        Logger.shared.log("Reflex launched")
 
         permissionsManager = PermissionsManager()
 
@@ -56,7 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         hotkeyManager?.stop()
         serverManager?.stop()
-        Logger.shared.log("MCPMenuBar terminating")
+        Logger.shared.log("Reflex terminating")
     }
 }
 

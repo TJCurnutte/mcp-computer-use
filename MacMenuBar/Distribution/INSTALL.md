@@ -1,23 +1,23 @@
-# Installing MCPMenuBar
+# Installing Reflex
 
 These are the steps for someone who downloads the `.dmg` or `.zip` release.
 
 ## Install from the DMG
 
-1. Open `MCPMenuBar.dmg`. A window opens showing `MCPMenuBar.app`, an `Applications` alias, and (if a window layout could not be applied) an `Instructions.txt` file.
-2. Drag `MCPMenuBar.app` onto the `Applications` alias. This copies it to `/Applications/MCPMenuBar.app`.
+1. Open `Reflex.dmg`. A window opens showing `Reflex.app`, an `Applications` alias, and (if a window layout could not be applied) an `Instructions.txt` file.
+2. Drag `Reflex.app` onto the `Applications` alias. This copies it to `/Applications/Reflex.app`.
 3. Eject the disk image.
-4. Open `MCPMenuBar` from `/Applications` (or from Launchpad).
+4. Open `Reflex` from `/Applications` (or from Launchpad).
 
 ## Install from the ZIP
 
-1. Open `MCPMenuBar.zip`.
-2. Move `MCPMenuBar.app` to `/Applications` (or `~/Applications`).
-3. Open `MCPMenuBar` from the Applications folder.
+1. Open `Reflex.zip`.
+2. Move `Reflex.app` to `/Applications` (or `~/Applications`).
+3. Open `Reflex` from the Applications folder.
 
 ## First run / onboarding
 
-The first time you launch MCPMenuBar, it opens an onboarding window:
+The first time you launch Reflex, it opens an onboarding window:
 
 - Confirms the app is in `/Applications` (optional; you can keep it in `~/Applications`, but the LaunchAgent example below uses `/Applications`).
 - Walks through Accessibility, Screen Recording, and Input Monitoring permissions.
@@ -26,7 +26,7 @@ The first time you launch MCPMenuBar, it opens an onboarding window:
 
 ## Start at login (LaunchAgent)
 
-To start `MCPMenuBar` automatically when you log in:
+To start `Reflex` automatically when you log in:
 
 ```bash
 cd MacMenuBar

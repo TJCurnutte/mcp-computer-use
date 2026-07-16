@@ -1,12 +1,12 @@
-# MCPMenuBar Manual QA Checklist
+# Reflex Manual QA Checklist
 
 Run through this list before shipping a new build.
 
 ## Install
 
 - [ ] Download the `.dmg` or `.zip`.
-- [ ] Drag `MCPMenuBar.app` to `/Applications`.
-- [ ] Double-click `/Applications/MCPMenuBar.app`.
+- [ ] Drag `Reflex.app` to `/Applications`.
+- [ ] Double-click `/Applications/Reflex.app`.
 
 ## First run
 
@@ -37,4 +37,4 @@ Run through this list before shipping a new build.
 ## Sign-off
 
 - [ ] All boxes checked.
-- [ ] No crashes in `~/.mcp-computer-use/logs/MCPMenuBar.err.log`.
+- [ ] No crashes in `~/.mcp-computer-use/logs/Reflex.err.log`.

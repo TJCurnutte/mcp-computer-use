@@ -6,7 +6,7 @@ Usage:
     python tests/test_bridge.py --screenshot
 
 The script expects `~/.mcp-computer-use/mcp.port` to exist (written by
-MCPMenuBar). It starts `mcp_bridge.py`, sends an MCP `initialize` request,
+Reflex). It starts `mcp_bridge.py`, sends an MCP `initialize` request,
 lists tools, calls `get_status`, and optionally calls `screenshot`.
 
 If the menu-bar app is not running, the test exits cleanly with a helpful
@@ -241,7 +241,7 @@ def main() -> int:
         print(f"Bridge not found at {BRIDGE}", file=sys.stderr)
         return 1
     if not PORT_FILE.exists():
-        print(f"{PORT_FILE} is missing. Is MCPMenuBar running?", file=sys.stderr)
+        print(f"{PORT_FILE} is missing. Is Reflex running?", file=sys.stderr)
         return 0
 
     print(f"Found port file: {PORT_FILE}")

@@ -1,12 +1,11 @@
-<<<<<<< HEAD
-# mcp-computer-use
+# Reflex — AI control for your Mac
 
 Enterprise-grade macOS MCP server that gives your AI agent eyes, hands, and a terminal.
 
 ## Tools
 
 - **Screenshot / display**
-  - `screenshot` — capture a display and return a base64 PNG.
+  - `screenshot` — capture a display and return a base64 image.
   - `screenshot_region` — capture a region of the screen.
   - `get_display_info` — list connected displays.
   - `get_cursor_position` — get the mouse pointer location.
@@ -66,6 +65,7 @@ If the pynput warning "This process is not trusted! Input event monitoring will 
 ```bash
 source .venv/bin/activate
 python test_client.py
+python benchmark.py
 ```
 
 ## Windsurf config
@@ -102,6 +102,8 @@ Create `~/.mcp-computer-use/config.json` to override defaults:
 ```json
 {
   "max_screenshot_dim": 1280,
+  "screenshot_format": "JPEG",
+  "jpeg_quality": 85,
   "allowed_shell_commands": ["git", "python", "python3", "node", "npm", "ls", "pwd", "cat", "echo", "which"],
   "blocked_shell_commands": ["rm -rf", "sudo", "mkfs", "dd", ">/dev/null", "shutdown", "reboot", "poweroff"],
   "confirm_sensitive": true
@@ -112,9 +114,9 @@ Create `~/.mcp-computer-use/config.json` to override defaults:
 
 The server arms a global `Ctrl+Alt+Q` hotkey via `pynput` when supported. If it cannot be armed, the server still runs and the process can be killed by the user or an agent calling the `stop` tool.
 
-## Menu-bar app (experimental)
+## Menu-bar companion (experimental)
 
-A native macOS menu-bar wrapper lives in `MacMenuBar/`. It keeps `mcp-computer-use`
+Reflex includes a native macOS menu-bar helper that keeps `mcp-computer-use`
 running in the top-right status bar, so the server works from any IDE or CLI:
 
 ```bash

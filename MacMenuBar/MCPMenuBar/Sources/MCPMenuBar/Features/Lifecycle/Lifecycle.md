@@ -15,7 +15,7 @@
 
      ```swift
      func applicationDidFinishLaunching(_ notification: Notification) {
-         Logger.shared.log("MCPMenuBar launched")
+         Logger.shared.log("Reflex launched")
 
          permissionChecker = PermissionChecker()
          menuManager = MenuManager(delegate: self)

@@ -4,14 +4,14 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 APP_DIR="$SCRIPT_DIR/../MCPMenuBar/build"
 APP_DIR_ABS="$(cd "$APP_DIR" && pwd)"
-APP_PATH="$APP_DIR_ABS/MCPMenuBar.app"
-OUTPUT_DMG="$APP_DIR_ABS/MCPMenuBar.dmg"
-VOLNAME="MCPMenuBar"
+APP_PATH="$APP_DIR_ABS/Reflex.app"
+OUTPUT_DMG="$APP_DIR_ABS/Reflex.dmg"
+VOLNAME="Reflex"
 BACKGROUND_IMG="$SCRIPT_DIR/background.png"
 INSTRUCTIONS="$SCRIPT_DIR/Instructions.txt"
 
 if [[ ! -d "$APP_PATH" ]]; then
-    echo "Error: $APP_PATH not found. Run MCPMenuBar/build_app.sh first." >&2
+    echo "Error: $APP_PATH not found. Run MacMenuBar/MCPMenuBar/build_app.sh first." >&2
     exit 1
 fi
 
@@ -57,7 +57,7 @@ if [[ -z "$MOUNTPOINT" ]]; then
 fi
 
 # Copy the app and create the Applications alias.
-cp -R "$APP_PATH" "$MOUNTPOINT/MCPMenuBar.app"
+cp -R "$APP_PATH" "$MOUNTPOINT/Reflex.app"
 ln -s /Applications "$MOUNTPOINT/Applications"
 
 # Install the background image used by the DMG window.
@@ -85,7 +85,7 @@ script = '''tell application "Finder"
         set icon size of theViewOptions to 128
         set text size of theViewOptions to 14
         set background picture of theViewOptions to file ".background:background.png"
-        set position of item "MCPMenuBar.app" of container window to {120, 200}
+        set position of item "Reflex.app" of container window to {120, 200}
         set position of item "Applications" of container window to {420, 200}
         update
         close

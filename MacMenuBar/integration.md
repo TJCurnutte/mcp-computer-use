@@ -1,11 +1,11 @@
-# MCPMenuBar Integration Guide
+# Reflex Integration Guide
 
-This directory wires the `MCPMenuBar` macOS menu-bar app to stdio-only MCP
+This directory wires the `Reflex` macOS menu-bar app to stdio-only MCP
 clients such as the Devin CLI, Cursor, and Windsurf.
 
 At runtime:
 
-1. `MCPMenuBar` starts a Python MCP server internally and exposes it over TCP.
+1. `Reflex` starts a Python MCP server internally and exposes it over TCP.
 2. It writes the listening port to `~/.mcp-computer-use/mcp.port`.
 3. `bridge/mcp_bridge.py` reads that port, connects to `127.0.0.1:<port>`, and
    proxies newline-delimited JSON-RPC between stdio and the TCP socket.
@@ -15,10 +15,10 @@ At runtime:
 
 ## App path & LaunchAgent
 
-`MCPMenuBar.app` should be installed at:
+`Reflex.app` should be installed at:
 
 ```
-/Applications/MCPMenuBar.app
+/Applications/Reflex.app
 ```
 
 The LaunchAgent at `LaunchAgent/com.curnutte.mcp-computer-use.plist` uses this
@@ -96,7 +96,7 @@ Restart the IDE window after editing the file.
 
 ## Verifying the connection
 
-With `MCPMenuBar` running (either launched manually or via the LaunchAgent),
+With `Reflex` running (either launched manually or via the LaunchAgent),
 run:
 
 ```bash

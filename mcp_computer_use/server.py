@@ -29,13 +29,13 @@ mcp = FastMCP("mcp-computer-use")
 
 @mcp.tool()
 def screenshot(display: int = 0, scale: bool = True) -> str:
-    """Take a screenshot and return a base64-encoded PNG with metadata."""
+    """Take a screenshot and return a base64-encoded image with metadata."""
     return json.dumps(act.take_screenshot(display, scale))
 
 
 @mcp.tool()
 def screenshot_region(left: int, top: int, width: int, height: int, scale: bool = True) -> str:
-    """Capture a region of the screen and return a base64 PNG."""
+    """Capture a region of the screen and return a base64 image."""
     return json.dumps(act.screenshot_region(left, top, width, height, scale))
 
 

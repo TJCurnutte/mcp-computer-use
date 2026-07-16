@@ -3,7 +3,7 @@
 ## What `StartupManager` does
 
 `StartupManager` is a singleton (`StartupManager.shared`) that self-manages the
-`com.curnutte.mcp-computer-use` LaunchAgent so `MCPMenuBar.app` can start at
+`com.curnutte.mcp-computer-use` LaunchAgent so `Reflex.app` can start at
 login.
 
 Public API:
@@ -32,7 +32,7 @@ which UI can observe to reflect the current state.
 
 For a distributed `.app`, make sure the packager copies
 `MacMenuBar/LaunchAgent/com.curnutte.mcp-computer-use.plist` into
-`MCPMenuBar.app/Contents/Resources/LaunchAgent/`.
+`Reflex.app/Contents/Resources/LaunchAgent/`.
 
 ## Wiring the menu
 
@@ -69,10 +69,10 @@ it to `~/Library/LaunchAgents/`.
 
 Key properties:
 
-- `ProgramArguments`: `/Applications/MCPMenuBar.app/Contents/MacOS/MCPMenuBar`
+- `ProgramArguments`: `/Applications/Reflex.app/Contents/MacOS/MCPMenuBar`
 - `RunAtLoad`: `true`
 - `KeepAlive`: `false`
-- `StandardOutPath`/`StandardErrorPath`: `~/.mcp-computer-use/logs/MCPMenuBar.*.log`
+- `StandardOutPath`/`StandardErrorPath`: `~/.mcp-computer-use/logs/Reflex.*.log`
 
 ## Manual install
 

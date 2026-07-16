@@ -1,6 +1,6 @@
 # Dashboard
 
-A status/control window for MCPMenuBar.
+A status/control window for Reflex.
 
 ## Files
 

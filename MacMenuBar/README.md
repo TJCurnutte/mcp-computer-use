@@ -1,6 +1,6 @@
 # MacMenuBar Integration
 
-This folder connects the `MCPMenuBar` macOS menu-bar app to stdio-based MCP
+This folder connects the `Reflex` macOS menu-bar app to stdio-based MCP
 clients like the Devin CLI, Cursor, and Windsurf.
 
 ## What lives here
@@ -8,7 +8,7 @@ clients like the Devin CLI, Cursor, and Windsurf.
 - `bridge/mcp_bridge.py` — stdio-to-TCP proxy that Devin/IDEs invoke as their
   MCP server command.
 - `LaunchAgent/com.curnutte.mcp-computer-use.plist` — macOS LaunchAgent that
-  starts `MCPMenuBar` at user login.
+  starts `Reflex` at user login.
 - `scripts/install_launchagent.sh` — copies the plist and loads it with
   `launchctl`.
 - `tests/` — integration tests:
@@ -28,25 +28,25 @@ The Swift app itself lives in `MCPMenuBar/` and is produced by the builder
 agent:
 
 ```bash
-cd /Users/curnutte/CascadeProjects/mcp-computer-use/MacMenuBar/MCPMenuBar
+cd /Users/curnutte/CascadeProjects/mcp-computer-use/MacMenuBar/Reflex
 ./build_app.sh
 ```
 
-`build_app.sh` writes `build/MCPMenuBar.app`. Install it to `/Applications`:
+`build_app.sh` writes `build/Reflex.app`. Install it to `/Applications`:
 
 ```bash
-./install.sh      # uses sudo to copy build/MCPMenuBar.app to /Applications
+./install.sh      # uses sudo to copy build/Reflex.app to /Applications
 ```
 
 Or copy it manually:
 
 ```bash
-cp -R build/MCPMenuBar.app /Applications/MCPMenuBar.app
+cp -R build/Reflex.app /Applications/Reflex.app
 ```
 
 ## Install the LaunchAgent
 
-The LaunchAgent starts `MCPMenuBar` at login and logs to
+The LaunchAgent starts `Reflex` at login and logs to
 `~/.mcp-computer-use/logs/`.
 
 ```bash
@@ -62,7 +62,7 @@ launchctl start com.curnutte.mcp-computer-use
 
 ## Onboarding & dashboard
 
-On first launch, `MCPMenuBar` opens an onboarding window that walks through:
+On first launch, `Reflex` opens an onboarding window that walks through:
 
 1. Moving the app to `/Applications` (if not already there).
 2. Granting **Accessibility**, **Screen Recording**, and **Input Monitoring**
@@ -87,7 +87,7 @@ For Devin CLI, keep the existing `mac-use-mcp` server unchanged and add the
 
 ## Test the integration
 
-With `MCPMenuBar` running (LaunchAgent or manually), run:
+With `Reflex` running (LaunchAgent or manually), run:
 
 ```bash
 cd /Users/curnutte/CascadeProjects/mcp-computer-use/MacMenuBar
@@ -120,7 +120,7 @@ menu-bar app is not running or has not written its port yet.
 1. Devin spawns `mcp_bridge.py` as a stdio MCP server.
 2. The bridge reads `~/.mcp-computer-use/mcp.port` and retries briefly if the
    file is not yet present.
-3. It opens a TCP connection to `127.0.0.1:<port>`, where `MCPMenuBar` is
+3. It opens a TCP connection to `127.0.0.1:<port>`, where `Reflex` is
    listening.
 4. It proxies newline-delimited JSON-RPC: stdin → socket and socket → stdout.
 5. When the socket closes or the user interrupts, the bridge exits cleanly.

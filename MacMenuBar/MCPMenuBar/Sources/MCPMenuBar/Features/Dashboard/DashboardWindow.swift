@@ -16,7 +16,7 @@ final class DashboardWindow: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "MCPMenuBar"
+        window.title = "Reflex"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
@@ -34,7 +34,7 @@ final class DashboardWindow: NSWindowController {
         self.controller = controller
 
         window.center()
-        window.setFrameAutosaveName("MCPMenuBar.DashboardWindow")
+        window.setFrameAutosaveName("Reflex.DashboardWindow")
         window.delegate = self
     }
 

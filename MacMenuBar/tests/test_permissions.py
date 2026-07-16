@@ -12,7 +12,7 @@ bridge/mcp_bridge.py, calls the get_status tool, and asserts:
 
 If the server does not yet expose permissions.accessibility in get_status,
 the test falls back to a run_shell_command probe that checks
-AXIsProcessTrustedWithOptions. The bridge port file is written by MCPMenuBar.
+AXIsProcessTrustedWithOptions. The bridge port file is written by Reflex.
 """
 
 from __future__ import annotations
@@ -294,7 +294,7 @@ def main() -> int:
         return 1
     if not PORT_FILE.exists():
         print(
-            f"{PORT_FILE} is missing. Is MCPMenuBar running and has it written its TCP port?",
+            f"{PORT_FILE} is missing. Is Reflex running and has it written its TCP port?",
             file=sys.stderr,
         )
         return 1

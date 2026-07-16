@@ -1,6 +1,6 @@
-# MCPMenuBar IPC Protocol
+# Reflex IPC Protocol
 
-The MCPMenuBar app runs a TCP server on the loopback interface. The bridge
+The Reflex app runs a TCP server on the loopback interface. The bridge
 (`MacMenuBar/bridge/mcp_bridge.py`) and the menu-bar app use this protocol.
 
 ## Transport

@@ -28,12 +28,12 @@ final class MenuManager: NSObject {
     init(delegate: MenuManagerDelegate?) {
         self.delegate = delegate
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusMenuItem = NSMenuItem(title: "MCPMenuBar", action: nil, keyEquivalent: "")
+        statusMenuItem = NSMenuItem(title: "Reflex", action: nil, keyEquivalent: "")
         statusMenuItem.isEnabled = false
         super.init()
         setupMenu()
         bindStartupManager()
-        updateStatus(text: "MCPMenuBar: Idle", state: .idle)
+        updateStatus(text: "Reflex: Idle", state: .idle)
     }
 
     private func setupMenu() {
@@ -120,7 +120,7 @@ final class MenuManager: NSObject {
 
         let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .semibold, scale: .medium)
             .applying(NSImage.SymbolConfiguration(paletteColors: [.white]))
-        let image = NSImage(systemSymbolName: "cursorarrow.rays", accessibilityDescription: "MCP Menu Bar")?
+        let image = NSImage(systemSymbolName: "cursorarrow.rays", accessibilityDescription: "Reflex")?
             .withSymbolConfiguration(config)
 
         if let image = image {
@@ -128,7 +128,7 @@ final class MenuManager: NSObject {
             button.image = image
             button.contentTintColor = nil
         } else {
-            button.title = "MCP"
+            button.title = "Reflex"
             button.contentTintColor = .white
         }
 

@@ -1,7 +1,7 @@
 """OCR helpers for locating text on the screen."""
 
 import re
-from typing import List
+from typing import List, Tuple
 
 import pytesseract
 from PIL import Image
@@ -12,14 +12,13 @@ def ocr_image(img: Image.Image) -> str:
     return pytesseract.image_to_string(img)
 
 
-def find_text(img: Image.Image, text: str) -> List[dict]:
-    """Return bounding boxes for all occurrences of text in the image.
+def _ocr_data(img: Image.Image) -> dict:
+    """Run Tesseract once and return the raw data dictionary."""
+    return pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
 
-    Coordinates are relative to the image. The image is the screenshot that
-    the model has been grounded on, so the returned coordinates are in the
-    same model-sized space.
-    """
-    data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
+
+def _find_text_words(data: dict, text: str) -> List[dict]:
+    """Return word-level bounding boxes matching text."""
     matches = []
     n_boxes = len(data["text"])
     pattern = re.compile(re.escape(text), re.IGNORECASE)
@@ -42,15 +41,12 @@ def find_text(img: Image.Image, text: str) -> List[dict]:
     return matches
 
 
-def find_text_lines(img: Image.Image, text: str) -> List[dict]:
-    """Line-level text search for longer phrases."""
-    data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
-    matches = []
+def _find_text_lines(data: dict, text: str) -> List[dict]:
+    """Return line-level bounding boxes matching text."""
     n_boxes = len(data["text"])
     pattern = re.compile(re.escape(text), re.IGNORECASE)
 
     # Tesseract output is grouped by block, par, line, word.
-    # Group words by line number and join them.
     lines = {}
     for i in range(n_boxes):
         line_key = (data["block_num"][i], data["par_num"][i], data["line_num"][i])
@@ -63,7 +59,8 @@ def find_text_lines(img: Image.Image, text: str) -> List[dict]:
             "conf": data["conf"][i],
         })
 
-    for line_key, words in lines.items():
+    matches = []
+    for words in lines.values():
         words.sort(key=lambda w: w["left"])
         line_text = " ".join(w["text"] for w in words).strip()
         if pattern.search(line_text):
@@ -83,3 +80,24 @@ def find_text_lines(img: Image.Image, text: str) -> List[dict]:
                 }
             )
     return matches
+
+
+def find_text(img: Image.Image, text: str) -> List[dict]:
+    """Return bounding boxes for all occurrences of text in the image.
+
+    Coordinates are relative to the image. The image is the screenshot that
+    the model has been grounded on, so the returned coordinates are in the
+    same model-sized space.
+    """
+    return _find_text_words(_ocr_data(img), text)
+
+
+def find_text_lines(img: Image.Image, text: str) -> List[dict]:
+    """Line-level text search for longer phrases."""
+    return _find_text_lines(_ocr_data(img), text)
+
+
+def find_all_text(img: Image.Image, text: str) -> Tuple[List[dict], List[dict]]:
+    """Return (word_matches, line_matches) from a single OCR pass."""
+    data = _ocr_data(img)
+    return _find_text_words(data, text), _find_text_lines(data, text)
